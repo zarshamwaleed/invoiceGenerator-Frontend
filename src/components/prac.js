@@ -1,0 +1,668 @@
+import React, { useState, useContext, useRef, useEffect } from "react";
+import Swal from 'sweetalert2';
+import { Link, useNavigate } from "react-router-dom";
+import { ThemeContext } from "../context/ThemeContext";
+import { AuthContext } from "../context/AuthContext";
+import Footer from "./Footer";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
+
+// Custom hook for detecting clicks outside an element
+// const useOutsideClick = (ref, callback) => {
+//   useEffect(() => {
+//     const handleClickOutside = (event) => {
+//       if (ref.current && !ref.current.contains(event.target)) {
+//         callback();
+//       }
+//     };
+//     document.addEventListener("mousedown", handleClickOutside);
+//     return () => {
+//       document.removeEventListener("mousedown", handleClickOutside);
+//     };
+//   }, [ref, callback]);
+// };
+
+export default function MyInvoices() {
+  const { darkMode } = useContext(ThemeContext);
+  const { user } = useContext(AuthContext);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [actionDropdown, setActionDropdown] = useState(null);
+  const [invoices, setInvoices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [pdfGenerating, setPdfGenerating] = useState(false);
+  const navigate = useNavigate();
+
+  // Refs for dropdowns
+  const mainDropdownRef = useRef(null);
+  const actionDropdownRef = useRef(null);
+
+  // Use custom hooks for outside click detection
+  // useOutsideClick(mainDropdownRef, () => setDropdownOpen(false));
+  // useOutsideClick(actionDropdownRef, () => setActionDropdown(null));
+
+  // Fetch invoices
+  useEffect(() => {
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+    const fetchInvoices = async () => {
+      try {
+        const res = await fetch(
+          `http://localhost:5000/invoices?userId=${user.id}`
+        );
+        const data = await res.json();
+        setInvoices(data);
+      } catch (err) {
+        console.error("❌ Failed to fetch invoices", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchInvoices();
+  }, [user]);
+
+  const handleDeleteInvoice = async (invoiceId) => {
+    if (window.confirm("Are you sure you want to delete this invoice?")) {
+      try {
+        const res = await fetch(`http://localhost:5000/invoice/${invoiceId}`, {
+          method: "DELETE",
+        });
+
+        if (res.ok) {
+          setInvoices(invoices.filter((invoice) => invoice._id !== invoiceId));
+        } else {
+  console.error("Failed to delete invoice");
+  Swal.fire({
+    title: '❌ Failed to Delete Invoice',
+    text: 'Please try again.',
+    icon: 'error',
+    confirmButtonText: 'OK',
+    confirmButtonColor: '#d33'
+  });
+}
+
+} catch (err) {
+  console.error("Error deleting invoice:", err);
+  Swal.fire({
+    title: '⚠️ Error Deleting Invoice',
+    text: 'An unexpected error occurred while deleting the invoice.',
+    icon: 'warning',
+    confirmButtonText: 'OK',
+    confirmButtonColor: '#f0ad4e'
+  });
+}
+
+    }
+    setActionDropdown(null);
+  };
+
+  const handleTogglePaymentStatus = async (invoice) => {
+    try {
+      const isPaid = invoice.status === "PAID";
+      const updateData = {
+        status: isPaid ? "UNPAID" : "PAID",
+        balanceDue: isPaid ? invoice.total : 0,
+        amountPaid: isPaid ? 0 : invoice.total,
+      };
+
+      const res = await fetch(
+        `http://localhost:5000/invoice/${invoice.invoiceNumber}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(updateData),
+        }
+      );
+
+      if (res.ok) {
+        // Update the invoice in state
+        setInvoices(
+          invoices.map((inv) =>
+            inv._id === invoice._id ? { ...inv, ...updateData } : inv
+          )
+        );
+      } else {
+  console.error("Failed to update invoice status");
+  Swal.fire({
+    title: '❌ Failed to Update Status',
+    text: 'Unable to update the invoice status. Please try again.',
+    icon: 'error',
+    confirmButtonText: 'OK',
+    confirmButtonColor: '#d33'
+  });
+}
+
+    } catch (err) {
+  console.error("Error updating invoice status:", err);
+
+  Swal.fire({
+    title: '⚠️ Error Updating Status',
+    text: 'An unexpected error occurred while updating the invoice status.',
+    icon: 'warning',
+    confirmButtonText: 'OK',
+    confirmButtonColor: '#f0ad4e'
+  });
+}
+
+    setActionDropdown(null);
+  };
+
+  // Handle PDF download
+const handleDownloadClick = async (e, invoice) => {
+  e.preventDefault();
+  e.stopPropagation();
+  setActionDropdown(null);
+  setPdfGenerating(true);
+
+  try {
+    const doc = new jsPDF();
+    const L = invoice.labels || {}; // dynamic labels fallback
+
+    let y = 20;
+
+    // === LOGO + COMPANY NAME ===
+ if (invoice.logo) {
+  try {
+    const logoResponse = await fetch(invoice.logo);
+    const logoBlob = await logoResponse.blob();
+    const logoUrl = URL.createObjectURL(logoBlob);
+
+    // Detect type
+    const mimeType = logoBlob.type; // e.g. "image/png", "image/avif"
+    let imgType = "JPEG";
+    if (mimeType.includes("png")) imgType = "PNG";
+    if (mimeType.includes("webp")) imgType = "WEBP";
+
+    if (mimeType.includes("avif")) {
+      // ✅ Convert AVIF → PNG using an offscreen canvas
+      const avifImg = new Image();
+      avifImg.src = logoUrl;
+      await new Promise((resolve) => (avifImg.onload = resolve));
+      const canvas = document.createElement("canvas");
+      canvas.width = avifImg.width;
+      canvas.height = avifImg.height;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(avifImg, 0, 0);
+      const pngDataUrl = canvas.toDataURL("image/png");
+      doc.addImage(pngDataUrl, "PNG", 15, y, 25, 25);
+    } else {
+      // ✅ Directly add JPEG, PNG, or WEBP
+      doc.addImage(logoUrl, imgType, 15, y, 25, 25);
+    }
+  } catch (err) {
+    console.error("Logo load failed:", err);
+  }
+}
+
+
+
+    doc.setFont("helvetica", "bold").setFontSize(12);
+    doc.text(invoice.from || "", 15, y + 35);
+
+    // === INVOICE HEADER RIGHT ===
+    doc.setFontSize(22).setFont("helvetica", "bold");
+    doc.text(invoice.type || "INVOICE", 195, y + 5, { align: "right" });
+
+    doc.setFontSize(10).setTextColor(80);
+    doc.text(`# ${invoice.invoiceNumber || ""}`, 195, y + 12, { align: "right" });
+
+    let headerY = y + 22;
+    doc.setFontSize(11).setTextColor(0);
+
+    if (invoice.date) {
+      doc.text(`${L.date || "Date:"} ${invoice.date}`, 195, headerY, { align: "right" });
+      headerY += 6;
+    }
+
+    if (invoice.paymentTerms) {
+      doc.text(
+        `${L.paymentTerms || "Payment Terms:"} ${invoice.paymentTerms}`,
+        195,
+        headerY,
+        { align: "right" }
+      );
+      headerY += 6;
+    }
+
+    if (invoice.dueDate) {
+      doc.text(`${L.dueDate || "Due Date:"} ${invoice.dueDate}`, 195, headerY, {
+        align: "right",
+      });
+      headerY += 6;
+    }
+
+    if (invoice.poNumber) {
+      doc.text(`${L.poNumber || "PO Number:"} ${invoice.poNumber}`, 195, headerY, {
+        align: "right",
+      });
+      headerY += 6;
+    }
+
+    // === BILL TO / SHIP TO ===
+    y += 50;
+    doc.setFontSize(10).setTextColor(100);
+    if (invoice.billTo) {
+      doc.text(L.billTo || "Bill To:", 15, y);
+      doc.setFontSize(12).setTextColor(0).setFont("helvetica", "bold");
+      doc.text(invoice.billTo, 15, y + 6);
+    }
+
+    if (invoice.shipTo) {
+      const shipToX = 160; // move ship-to near page right end
+      doc.setFontSize(10).setTextColor(100);
+      doc.text(L.shipTo || "Ship To:", shipToX, y);
+      doc.setFontSize(12).setTextColor(0).setFont("helvetica", "bold");
+      doc.text(invoice.shipTo, shipToX, y + 6);
+    }
+
+    // === BALANCE DUE BAR (Moved left) ===
+    y += 25;
+    const balanceBarLabelX = 100; // moved left to align with totals labels
+    const balanceBarValueX = 190;
+
+    doc.setFillColor(245, 245, 245);
+    doc.rect(15, y, 180, 12, "F");
+    doc.setFontSize(12).setFont("helvetica", "bold").setTextColor(80);
+    doc.text(L.balanceDue || "Balance Due:", balanceBarLabelX, y + 8);
+    doc.setTextColor(0);
+    doc.text(
+      `${invoice.currency || "kr"}${(
+        invoice.balanceDue || invoice.total || 0
+      ).toFixed(2)}`,
+      balanceBarValueX,
+      y + 8,
+      { align: "right" }
+    );
+
+    // === LINE ITEMS TABLE ===
+    y += 20;
+    const itemHead = [
+      [
+        L.item || "Item",
+        L.quantity || "Quantity",
+        L.rate || "Rate",
+        L.amount || "Amount"
+      ]
+    ];
+    const itemsData = invoice.lineItems.map((item) => [
+      item.description || "-",
+      item.quantity,
+      `${invoice.currency || "kr"}${(item.rate || 0).toFixed(2)}`,
+      `${invoice.currency || "kr"}${(item.amount || 0).toFixed(2)}`
+    ]);
+
+    autoTable(doc, {
+      startY: y,
+      head: itemHead,
+      body: itemsData,
+      headStyles: {
+        fillColor: [20, 20, 20],
+        textColor: 255,
+        halign: "left",
+      },
+      alternateRowStyles: { fillColor: [245, 245, 245] },
+      styles: { fontSize: 10, cellPadding: 4 },
+      margin: { left: 15, right: 15 }
+    });
+
+    // === TOTALS SECTION ===
+    let totalsY = doc.lastAutoTable.finalY + 12;
+    const totalsLabelX = 100;  // moved labels more left for long names
+    const totalsValueX = 190;  // keep values aligned to right
+
+    const addTotalLine = (label, value, bold = false) => {
+      if (bold) doc.setFont("helvetica", "bold");
+      else doc.setFont("helvetica", "normal");
+      doc.text(label, totalsLabelX, totalsY);
+      doc.text(value, totalsValueX, totalsY, { align: "right" });
+      totalsY += 8;
+    };
+
+    // subtotal
+    addTotalLine(L.subtotal || "Subtotal:", `${invoice.currency || "kr"}${(invoice.subtotal || 0).toFixed(2)}`);
+    // shipping
+    addTotalLine(L.shipping || "Shipping:", `${invoice.currency || "kr"}${(invoice.shipping || 0).toFixed(2)}`);
+
+    // tax (if exists)
+    if (invoice.tax) {
+      addTotalLine(
+        `${L.tax || "Tax"} (${invoice.taxRate || 0}%):`,
+        `${invoice.currency || "kr"}${invoice.tax.toFixed(2)}`
+      );
+    }
+
+    // discount (if exists)
+    if (invoice.discount) {
+      addTotalLine(
+        L.discount || "Discount:",
+        `-${invoice.currency || "kr"}${invoice.discount.toFixed(2)}`
+      );
+    }
+
+    // total
+    addTotalLine(L.total || "Total:", `${invoice.currency || "kr"}${(invoice.total || 0).toFixed(2)}`, true);
+
+    // amount paid
+    addTotalLine(L.amountPaid || "Amount Paid:", `${invoice.currency || "kr"}${(invoice.amountPaid || 0).toFixed(2)}`);
+
+    // balance due
+    addTotalLine(L.balanceDue || "Balance Due:", `${invoice.currency || "kr"}${(invoice.balanceDue || invoice.total || 0).toFixed(2)}`, true);
+
+    totalsY += 10;
+
+    // === NOTES & TERMS ===
+    if (invoice.notes) {
+      doc.setFont("helvetica", "bold");
+      doc.text(L.notes || "Notes:", 15, totalsY);
+      doc.setFont("helvetica", "normal");
+      const splitNotes = doc.splitTextToSize(invoice.notes, 180);
+      doc.text(splitNotes, 15, totalsY + 6);
+      totalsY += splitNotes.length * 6 + 10;
+    }
+
+    if (invoice.terms) {
+      doc.setFont("helvetica", "bold");
+      doc.text(L.terms || "Terms:", 15, totalsY);
+      doc.setFont("helvetica", "normal");
+      const splitTerms = doc.splitTextToSize(invoice.terms, 180);
+      doc.text(splitTerms, 15, totalsY + 6);
+    }
+
+    // === FOOTER ===
+    doc.setFontSize(10).setTextColor(100);
+    doc.text("Thank you for your business!", 105, 285, { align: "center" });
+
+    // SAVE PDF
+    doc.save(`invoice_${invoice.invoiceNumber || "default"}.pdf`);
+
+  } catch (error) {
+  console.error("Error generating PDF:", error);
+
+  Swal.fire({
+    title: '❌ Failed to Generate PDF',
+    text: 'Something went wrong while generating the PDF. Please try again.',
+    icon: 'error',
+    confirmButtonText: 'OK',
+    confirmButtonColor: '#d33'
+  });
+}
+ finally {
+    setPdfGenerating(false);
+  }
+};
+
+  return (
+    <div
+      className={`min-h-[100vh] w-full p-8 transition-colors duration-300 ${
+        darkMode ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-900"
+      }`}
+    >
+      {/* PDF Loading Overlay */}
+      {pdfGenerating && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-green-500"></div>
+        </div>
+      )}
+
+      <div
+        className={`rounded-lg shadow p-6 w-full transition-colors duration-300 ${
+          darkMode ? "bg-gray-800 text-white" : "bg-white text-gray-900"
+        }`}
+      >
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-semibold">My Invoices</h1>
+          <div className="relative" ref={mainDropdownRef}>
+            <div className="flex rounded-md shadow overflow-hidden">
+              <button
+                className="bg-green-600 hover:bg-green-700 text-white font-medium px-5 py-2"
+                onClick={() => navigate("/")}
+              >
+                New Invoice
+              </button>
+              <button
+                onClick={() => setDropdownOpen(!dropdownOpen)}
+                className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 border-l border-green-500"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </button>
+            </div>
+            {dropdownOpen && (
+              <div
+                className={`absolute right-0 mt-2 w-48 border rounded-md shadow-lg z-50 ${
+                  darkMode
+                    ? "bg-gray-700 border-gray-600"
+                    : "bg-white border-gray-200"
+                }`}
+              >
+                <button
+                  onClick={() => {
+                    navigate("/credit-note-template");
+                    setDropdownOpen(false);
+                  }}
+                  className={`block w-full text-left px-4 py-2 text-sm ${
+                    darkMode
+                      ? "text-gray-300 hover:bg-gray-600"
+                      : "text-gray-700 hover:bg-gray-100"
+                  }`}
+                >
+                  New Credit Note
+                </button>
+                <button
+                  onClick={() => {
+                    navigate("/quote-template");
+                    setDropdownOpen(false);
+                  }}
+                  className={`block w-full text-left px-4 py-2 text-sm ${
+                    darkMode
+                      ? "text-gray-300 hover:bg-gray-600"
+                      : "text-gray-700 hover:bg-gray-100"
+                  }`}
+                >
+                  New Quote
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {loading ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left border-b font-medium">
+                  <th className="px-4 py-2">CUSTOMER</th>
+                  <th className="px-4 py-2">REFERENCE</th>
+                  <th className="px-4 py-2">DATE</th>
+                  <th className="px-4 py-2">DUE DATE</th>
+                  <th className="px-4 py-2">STATUS</th>
+                  <th className="px-4 py-2">TOTAL</th>
+                  <th className="px-4 py-2"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {invoices.map((invoice, index) => (
+                  <tr key={invoice._id} className="border-b">
+                    <td className="px-4 py-3">{invoice.billTo}</td>
+                    <td
+                      className="px-4 py-3 text-emerald-600 font-medium cursor-pointer"
+                      onClick={() =>
+                        navigate(`/invoice/${invoice.invoiceNumber}`)
+                      }
+                    >
+                      Invoice #{invoice.invoiceNumber}
+                    </td>
+                    <td className="px-4 py-3">{invoice.date}</td>
+                    <td className="px-4 py-3">{invoice.dueDate}</td>
+                    <td className="px-4 py-3">
+                      {invoice.balanceDue === 0 ? (
+                        <span className="text-emerald-600 bg-emerald-100 px-2 py-1 rounded text-xs font-medium inline-flex items-center">
+                          <span className="w-2 h-2 rounded-full bg-emerald-600 mr-1"></span>
+                          Paid
+                        </span>
+                      ) : (
+                        <span className="text-yellow-600 bg-yellow-100 px-2 py-1 rounded text-xs font-medium">
+                          Unpaid
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      {invoice.currency}
+                      {(invoice.total || 0).toFixed(2)}
+                    </td>
+                    <td className="px-4 py-3 relative">
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() =>
+                            navigate(`/view-invoice/${invoice.invoiceNumber}`)
+                          }
+                          className="bg-gray-100 hover:bg-gray-200 text-gray-800 px-3 py-1 rounded-md text-sm font-medium"
+                        >
+                          View
+                        </button>
+
+                        <div className="relative" ref={actionDropdownRef}>
+                          <button
+                            onClick={() =>
+                              setActionDropdown((prev) =>
+                                prev === index ? null : index
+                              )
+                            }
+                            className={`px-2 py-1 rounded-md transition-colors duration-200 ${
+                              darkMode
+                                ? "text-gray-300 hover:bg-gray-600 hover:text-white"
+                                : "text-gray-500 hover:bg-gray-200 hover:text-gray-800"
+                            }`}
+                          >
+                            <svg
+                              className="w-5 h-5"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M19 9l-7 7-7-7"
+                              />
+                            </svg>
+                          </button>
+
+                          {actionDropdown === index && (
+                            <div
+                              className={`absolute right-0 mt-2 w-40 z-50 border rounded-md shadow-md ${
+                                darkMode
+                                  ? "bg-gray-700 border-gray-600"
+                                  : "bg-white border-gray-200"
+                              }`}
+                            >
+                              <button
+                                onClick={(e) => handleDownloadClick(e, invoice)}
+                                className={`w-full text-left px-4 py-2 text-sm ${
+                                  darkMode
+                                    ? "hover:bg-gray-600"
+                                    : "hover:bg-gray-100"
+                                } flex items-center gap-2`}
+                                disabled={pdfGenerating}
+                              >
+                                <svg
+                                  className="w-4 h-4"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                                  />
+                                </svg>
+                                {pdfGenerating
+                                  ? "Generating..."
+                                  : "Download PDF"}
+                              </button>
+                              <Link
+                                to={`/signinHomepage?edit=${invoice.invoiceNumber}`}
+                                className={`w-full text-left px-4 py-2 text-sm ${
+                                  darkMode
+                                    ? "hover:bg-gray-600"
+                                    : "hover:bg-gray-100"
+                                } flex items-center gap-2`}
+                              >
+                                <svg
+                                  className="w-4 h-4"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                  />
+                                </svg>
+                                Edit
+                              </Link>
+
+                              <button
+                                onClick={() =>
+                                  handleTogglePaymentStatus(invoice)
+                                }
+                                className={`w-full text-left px-4 py-2 text-sm ${
+                                  darkMode
+                                    ? "hover:bg-gray-600 text-white"
+                                    : "hover:bg-gray-100 text-gray-900"
+                                } flex items-center gap-2`}
+                              >
+                                <span className="text-lg">✔️</span>
+                                {invoice.status === "PAID"
+                                  ? "Mark as Unpaid"
+                                  : "Mark as Paid"}
+                              </button>
+                              <button
+                                onClick={() => handleDeleteInvoice(invoice._id)}
+                                className={`w-full text-left px-4 py-2 text-sm ${
+                                  darkMode
+                                    ? "text-red-400 hover:bg-gray-600"
+                                    : "text-red-600 hover:bg-red-50"
+                                } flex items-center gap-2`}
+                              >
+                                <span className="text-lg">🗑️</span> Delete
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+      <Footer />
+    </div>
+  );
+}
