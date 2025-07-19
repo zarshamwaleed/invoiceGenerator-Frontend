@@ -388,22 +388,26 @@ const getCurrencySymbol = () => currencySymbols[icurrency] || "$";
   setInvoiceData(invoiceDataToSave);
 
   try {
-    const response = await fetch("http://localhost:5000/invoice", {
+  const response = await fetch(
+    "https://invoice-generator-backend-liard.vercel.app/invoice",
+    {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(invoiceDataToSave),
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to save invoice");
     }
+  );
 
-    const result = await response.json();
-    console.log("✅ Invoice saved:", result);
-    return result;
-  } catch (error) {
+  if (!response.ok) {
+    throw new Error("Failed to save invoice");
+  }
+
+  const result = await response.json();
+  console.log("✅ Invoice saved:", result);
+  return result;
+
+} catch (error) {
     console.error("❌ Error saving invoice:", error);
     throw error;
   }
@@ -493,13 +497,17 @@ const handleSaveDefault = async () => {
     };
 
     // Update the invoice in the database
-    const response = await fetch(`http://localhost:5000/invoice/${invoiceNumber}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(updatedInvoice)
-    });
+    const response = await fetch(
+  `https://invoice-generator-backend-liard.vercel.app/invoice/${invoiceNumber}`,
+  {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(updatedInvoice),
+  }
+);
+
 
     if (!response.ok) throw new Error('Failed to update invoice');
 
@@ -528,12 +536,14 @@ const handleSaveDefault = async () => {
 };
 
 const checkInvoiceExists = async (invoiceNumber) => {
-  try {
-    const response = await fetch(`http://localhost:5000/invoice/check/${invoiceNumber}`);
-    if (!response.ok) throw new Error('Failed to check invoice');
-    const data = await response.json();
-    return data.exists;
-  } catch (error) {
+ try {
+  const response = await fetch(
+    `https://invoice-generator-backend-liard.vercel.app/invoice/check/${invoiceNumber}`
+  );
+  if (!response.ok) throw new Error("Failed to check invoice");
+  const data = await response.json();
+  return data.exists;
+} catch (error) {
     console.error('Error checking invoice:', error);
     return false;
   }

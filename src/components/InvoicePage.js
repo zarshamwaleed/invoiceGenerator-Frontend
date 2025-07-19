@@ -14,7 +14,8 @@ const InvoicePage = () => {
   useEffect(() => {
     const fetchInvoice = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/invoice/${invoiceNumber}`);
+       const response = await fetch(`https://invoice-generator-backend-liard.vercel.app/invoice/${invoiceNumber}`);
+
         const data = await response.json();
         setInvoice(data.invoice);
       } catch (error) {

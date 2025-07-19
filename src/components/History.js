@@ -36,11 +36,12 @@ export default function History() {
   useEffect(() => {
     const fetchInvoices = async () => {
       try {
-        const response = await fetch('http://localhost:5000/invoices');
-        if (!response.ok) throw new Error('Failed to fetch invoices');
-        const data = await response.json();
-        setInvoices(data);
-      } catch (error) {
+  const response = await fetch('https://invoice-generator-backend-liard.vercel.app/invoices');
+  if (!response.ok) throw new Error('Failed to fetch invoices');
+  const data = await response.json();
+  setInvoices(data);
+}
+catch (error) {
         console.error('Error fetching invoices:', error);
       } finally {
         setLoading(false);
@@ -50,25 +51,27 @@ export default function History() {
   }, []);
 
   const handleDelete = async (id) => {
-    try {
-      const response = await fetch(`http://localhost:5000/invoice/${id}`, {
-        method: 'DELETE'
-      });
-      if (!response.ok) throw new Error('Failed to delete invoice');
-      setInvoices(invoices.filter(inv => inv._id !== id));
-    } catch (error) {
+  try {
+  const response = await fetch(`https://invoice-generator-backend-liard.vercel.app/invoice/${id}`, {
+    method: 'DELETE'
+  });
+  if (!response.ok) throw new Error('Failed to delete invoice');
+  setInvoices(invoices.filter(inv => inv._id !== id));
+}
+ catch (error) {
       console.error('Error deleting invoice:', error);
     }
   };
 
   const eraseEverything = async () => {
-    try {
-      const response = await fetch('http://localhost:5000/invoices', {
-        method: 'DELETE'
-      });
-      if (!response.ok) throw new Error('Failed to clear invoices');
-      setInvoices([]);
-    } catch (error) {
+  try {
+  const response = await fetch('https://invoice-generator-backend-liard.vercel.app/invoices', {
+    method: 'DELETE'
+  });
+  if (!response.ok) throw new Error('Failed to clear invoices');
+  setInvoices([]);
+}
+catch (error) {
       console.error('Error clearing invoices:', error);
     }
   };

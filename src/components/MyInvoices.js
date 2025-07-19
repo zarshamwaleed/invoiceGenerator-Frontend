@@ -47,13 +47,13 @@ export default function MyInvoices() {
       return;
     }
     const fetchInvoices = async () => {
-      try {
-        const res = await fetch(
-          `http://localhost:5000/invoices?userId=${user.id}`
-        );
-        const data = await res.json();
-        setInvoices(data);
-      } catch (err) {
+    try {
+  const res = await fetch(
+    `https://invoice-generator-backend-liard.vercel.app/invoices?userId=${user.id}`
+  );
+  const data = await res.json();
+  setInvoices(data);
+}  catch (err) {
         console.error("❌ Failed to fetch invoices", err);
       } finally {
         setLoading(false);
@@ -75,33 +75,34 @@ export default function MyInvoices() {
   }).then(async (result) => {
     if (result.isConfirmed) {
       try {
-        const res = await fetch(`http://localhost:5000/invoice/${invoiceId}`, {
-          method: "DELETE",
-        });
+  const res = await fetch(
+    `https://invoice-generator-backend-liard.vercel.app/invoice/${invoiceId}`,
+    {
+      method: "DELETE",
+    }
+  );
 
-        if (res.ok) {
-          setInvoices(invoices.filter((invoice) => invoice._id !== invoiceId));
+  if (res.ok) {
+    setInvoices(invoices.filter((invoice) => invoice._id !== invoiceId));
 
-          Swal.fire({
-            title: "✅ Deleted!",
-            text: "The invoice has been removed.",
-            icon: "success",
-            timer: 1500,
-            showConfirmButton: false
-          });
-
-        } else {
-          console.error("Failed to delete invoice");
-          Swal.fire({
-            title: "❌ Failed to Delete",
-            text: "Please try again.",
-            icon: "error",
-            confirmButtonText: "OK",
-            confirmButtonColor: "#d33"
-          });
-        }
-
-      } catch (err) {
+    Swal.fire({
+      title: "✅ Deleted!",
+      text: "The invoice has been removed.",
+      icon: "success",
+      timer: 1500,
+      showConfirmButton: false,
+    });
+  } else {
+    console.error("Failed to delete invoice");
+    Swal.fire({
+      title: "❌ Failed to Delete",
+      text: "Please try again.",
+      icon: "error",
+      confirmButtonText: "OK",
+      confirmButtonColor: "#d33",
+    });
+  }
+} catch (err) {
         console.error("Error deleting invoice:", err);
         Swal.fire({
           title: "⚠️ Error",
@@ -127,16 +128,17 @@ export default function MyInvoices() {
         amountPaid: isPaid ? 0 : invoice.total,
       };
 
-      const res = await fetch(
-        `http://localhost:5000/invoice/${invoice.invoiceNumber}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(updateData),
-        }
-      );
+     const res = await fetch(
+  `https://invoice-generator-backend-liard.vercel.app/invoice/${invoice.invoiceNumber}`,
+  {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(updateData),
+  }
+);
+
 
       if (res.ok) {
         // Update the invoice in state
