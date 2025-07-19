@@ -264,7 +264,7 @@ const handleDownloadClick = async (e, invoice) => {
     }
 
     if (invoice.shipTo) {
-      const shipToX = 420;
+      const shipToX = 480;
       doc.setFontSize(9).setTextColor(100);
       doc.text((L.shipTo || "Ship To") + ":", shipToX, y);
       doc.setFontSize(11).setTextColor(30).setFont("helvetica", "medium");
@@ -277,7 +277,7 @@ const handleDownloadClick = async (e, invoice) => {
     doc.rect(40, y, 520, 28, "F");
 
     doc.setFontSize(11).setFont("helvetica", "medium").setTextColor(70);
-    doc.text((L.balanceDue || "Balance Due") + ":", 300, y + 18, {
+    doc.text((L.balanceDue || "Balance Due") + ":", 400, y + 18, {
       align: "right",
     });
 
@@ -286,7 +286,7 @@ const handleDownloadClick = async (e, invoice) => {
       `${invoice.currency || "kr"}${(
         invoice.balanceDue || invoice.total || 0
       ).toFixed(2)}`,
-      520,
+      540,
       y + 18,
       { align: "right" }
     );

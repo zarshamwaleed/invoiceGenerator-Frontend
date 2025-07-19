@@ -244,32 +244,33 @@ const invoiceType = getInvoiceType(location.pathname);
     }
   };
 
-  const getCurrencySymbol = () => {
-    const currencySymbols = {
-      USD: "$",
-      EUR: "€",
-      GBP: "£",
-      JPY: "¥",
-      CNY: "¥",
-      AUD: "A$",
-      CAD: "C$",
-      CHF: "CHF",
-      INR: "₹",
-      PKR: "₨",
-      ZAR: "R",
-      SEK: "kr",
-      NOK: "kr",
-      DKK: "kr",
-      RUB: "₽",
-      SGD: "S$",
-      HKD: "HK$",
-      NZD: "NZ$",
-      THB: "฿",
-      MYR: "RM",
-      SAR: "﷼",
-    };
-    return currencySymbols[currency] || "$";
-  };
+// Store currency code → symbol mapping
+const currencySymbols = {
+  USD: "$",
+  EUR: "€",
+  GBP: "£",
+  JPY: "¥",
+  CNY: "¥",
+  AUD: "A$",
+  CAD: "C$",
+  CHF: "CHF",
+  INR: "₹",
+  PKR: "₨",
+  ZAR: "R",
+  SEK: "kr",
+  NOK: "kr",
+  DKK: "kr",
+  RUB: "₽",
+  SGD: "S$",
+  HKD: "HK$",
+  NZD: "NZ$",
+  THB: "฿",
+  MYR: "RM",
+  SAR: "﷼",
+};
+
+// This returns the correct symbol for the currently selected currency
+const getCurrencySymbol = () => currencySymbols[icurrency] || "$";
 
   const calculateSubtotal = () => {
     return items.reduce((sum, item) => sum + item.amount, 0);

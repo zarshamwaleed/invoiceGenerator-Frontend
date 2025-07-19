@@ -244,32 +244,33 @@ const invoiceType = getInvoiceType(location.pathname);
     }
   };
 
-  const getCurrencySymbol = () => {
-    const currencySymbols = {
-      USD: "$",
-      EUR: "€",
-      GBP: "£",
-      JPY: "¥",
-      CNY: "¥",
-      AUD: "A$",
-      CAD: "C$",
-      CHF: "CHF",
-      INR: "₹",
-      PKR: "₨",
-      ZAR: "R",
-      SEK: "kr",
-      NOK: "kr",
-      DKK: "kr",
-      RUB: "₽",
-      SGD: "S$",
-      HKD: "HK$",
-      NZD: "NZ$",
-      THB: "฿",
-      MYR: "RM",
-      SAR: "﷼",
-    };
-    return currencySymbols[currency] || "$";
-  };
+ // Store currency code → symbol mapping
+const currencySymbols = {
+  USD: "$",
+  EUR: "€",
+  GBP: "£",
+  JPY: "¥",
+  CNY: "¥",
+  AUD: "A$",
+  CAD: "C$",
+  CHF: "CHF",
+  INR: "₹",
+  PKR: "₨",
+  ZAR: "R",
+  SEK: "kr",
+  NOK: "kr",
+  DKK: "kr",
+  RUB: "₽",
+  SGD: "S$",
+  HKD: "HK$",
+  NZD: "NZ$",
+  THB: "฿",
+  MYR: "RM",
+  SAR: "﷼",
+};
+
+// This returns the correct symbol for the currently selected currency
+const getCurrencySymbol = () => currencySymbols[icurrency] || "$";
 
   const calculateSubtotal = () => {
     return items.reduce((sum, item) => sum + item.amount, 0);
@@ -1102,65 +1103,7 @@ const checkInvoiceExists = async (invoiceNumber) => {
               />
             </div>
 
-            {/* <div className="flex items-center w-[80%] ml-auto gap-x-4">
-              <div className="flex items-center">
-                {isEditingLabel === "dueDate" ? (
-                  <div className="flex items-center w-32">
-                    <input
-                      type="text"
-                      value={tempLabelValue}
-                      onChange={(e) => setTempLabelValue(e.target.value)}
-                      className={`border rounded px-2 py-1 w-full mr-2 ${
-                        darkMode
-                          ? "bg-gray-700 border-gray-600 text-white"
-                          : "bg-white border-gray-300 text-gray-900"
-                      }`}
-                    />
-                    <button
-                      onClick={saveLabel}
-                      className={`text-xs mr-1 ${
-                        darkMode ? "text-green-400" : "text-green-600"
-                      }`}
-                    >
-                      ✓
-                    </button>
-                    <button
-                      onClick={cancelEditingLabel}
-                      className={`text-xs ${
-                        darkMode ? "text-red-400" : "text-red-500"
-                      }`}
-                    >
-                      ×
-                    </button>
-                  </div>
-                ) : (
-                  <label
-                    className={`w-32 text-sm font-medium ${
-                      darkMode ? "text-white" : "text-gray-800"
-                    } cursor-pointer`}
-                    onClick={() => startEditingLabel("dueDate")}
-                  >
-                    {labels.dueDate}
-                  </label>
-                )}
-              </div>
-
-              <input
-                type="text"
-                placeholder="Due Date"
-                value={dueDate}
-                onChange={(e) => setDueDate(e.target.value)}
-                onFocus={(e) => (e.target.type = "date")}
-                onBlur={(e) => (e.target.type = "text")}
-                className={`flex-1 border rounded px-3 py-2 transition-colors duration-300 max-w-[200px]
-    ${
-      darkMode
-        ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500"
-        : "bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-blue-500"
-    }`}
-              />
-            </div> */}
-
+           
             <div className="flex items-center w-[80%] ml-auto gap-x-4">
               <div className="flex items-center">
                 {isEditingLabel === "poNumber" ? (
@@ -2211,55 +2154,7 @@ const checkInvoiceExists = async (invoiceNumber) => {
               </div>
             </div>
 
-            {/* <div className="flex justify-between font-bold border-t pt-2 mt-2">
-              <div className="flex items-center">
-                {isEditingLabel === "balanceDue" ? (
-                  <div className="flex items-center">
-                    <input
-                      type="text"
-                      value={tempLabelValue}
-                      onChange={(e) => setTempLabelValue(e.target.value)}
-                      className={`border rounded px-2 py-1 w-32 mr-2 ${
-                        darkMode
-                          ? "bg-gray-700 border-gray-600 text-white"
-                          : "bg-white border-gray-300 text-gray-900"
-                      }`}
-                    />
-                    <button
-                      onClick={saveLabel}
-                      className={`text-xs mr-1 ${
-                        darkMode ? "text-green-400" : "text-green-600"
-                      }`}
-                    >
-                      ✓
-                    </button>
-                    <button
-                      onClick={cancelEditingLabel}
-                      className={`text-xs ${
-                        darkMode ? "text-red-400" : "text-red-500"
-                      }`}
-                    >
-                      ×
-                    </button>
-                  </div>
-                ) : (
-                  <span
-                    className={
-                      darkMode
-                        ? "text-white cursor-pointer"
-                        : "text-gray-900 cursor-pointer"
-                    }
-                    onClick={() => startEditingLabel("balanceDue")}
-                  >
-                    {labels.balanceDue}
-                  </span>
-                )}
-              </div>
-              <span className={darkMode ? "text-white" : "text-gray-900"}>
-                {getCurrencySymbol()}
-                {calculateBalanceDue().toFixed(2)}
-              </span>
-            </div> */}
+           
           </div>
         </div>
       </div>

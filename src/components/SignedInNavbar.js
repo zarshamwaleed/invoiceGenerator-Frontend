@@ -81,9 +81,14 @@ export default function SignedInNavbar({ userName, email, onSignOut }) {
 
                 {/* Center Links */}
                 <div className="hidden md:flex items-center space-x-6 text-sm">
-                    <button onClick={() => navigate('/my-invoices')} className={`${darkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-black'}`}>
-                        {getTranslation('myInvoices')}
-                    </button>
+                    <button
+  type="button"
+  onClick={() => window.location.href = '/my-invoices'}
+  className={`${darkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-black'}`}
+>
+  {getTranslation('myInvoices')}
+</button>
+
                     {/* <button onClick={() => navigate('/settings')} className={`${darkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-black'}`}>
                         {getTranslation('settings')}
                     </button> */}
