@@ -34,7 +34,7 @@ export default function SignUp() {
     try {
       setIsLoading(true);
 
-      const res = await fetch(`${API_BASE_URL}/signup`, {
+      const res = await fetch("https://invoice-generator-backend-liard.vercel.app/signup", {
         method: 'POST',
         body: JSON.stringify({
           firstName,
@@ -72,7 +72,8 @@ export default function SignUp() {
 
       console.log("✅ Google Decoded:", decoded);
 
-      const res = await axios.post(`${API_BASE_URL}/api/auth/google`, { token });
+      const res = await axios.post("https://invoice-generator-backend-liard.vercel.app/api/auth/google", { token });
+
 
       const userData = res.data.user;
 

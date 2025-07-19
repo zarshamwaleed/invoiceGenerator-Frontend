@@ -37,7 +37,8 @@ const handleGoogleSuccess = async (credentialResponse) => {
     console.log("Google JWT decoded:", decoded);
 
     // ✅ Send token to backend for verification
-    const res = await axios.post(`${API_BASE_URL}/api/auth/google`, { token });
+    const res = await axios.post("https://invoice-generator-backend-liard.vercel.app/api/auth/google", { token });
+
 
 
     const userData = res.data.user;
@@ -73,7 +74,7 @@ const handleGoogleSuccess = async (credentialResponse) => {
   setIsLoading(true);
 
   try {
-    const res = await fetch(`${API_BASE_URL}/signin`, {
+    const res = await fetch("https://invoice-generator-backend-liard.vercel.app/signin", {
       method: "POST",
       body: JSON.stringify({ email, password, keepLoggedIn }),
       headers: { "Content-Type": "application/json" },
