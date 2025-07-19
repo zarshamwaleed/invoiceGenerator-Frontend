@@ -64,50 +64,55 @@ const handleGoogleSuccess = async (credentialResponse) => {
     setError("Google sign-in failed. Please try again.");
   };
 
-  // ✅ Normal Email/Password login
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    setIsLoading(true);
+  e.preventDefault();
+  setError("");
+  setIsLoading(true);
 
-    try {
-      const res = await fetch("http://localhost:5000/signin", {
-        method: "POST",
-        body: JSON.stringify({ email, password, keepLoggedIn }),
-        headers: { "Content-Type": "application/json" },
-      });
+  try {
+    const res = await fetch("http://localhost:5000/signin", {
+      method: "POST",
+      body: JSON.stringify({ email, password, keepLoggedIn }),
+      headers: { "Content-Type": "application/json" },
+    });
 
-      const data = await res.json();
+    const data = await res.json();
+    console.log("🔹 Backend Signin Response:", data);
 
-      if (!res.ok || data.result === "Invalid email or password") {
-        throw new Error(data.result || "Sign in failed");
-      }
-
-      onSignIn(email, password, {
-        name: data.name || "User",
-        email: email,
-      });
-
-      if (keepLoggedIn) {
-        localStorage.setItem("isSignedIn", "true");
-        localStorage.setItem(
-          "user",
-          JSON.stringify({ name: data.name || "User", email })
-        );
-      }
-
-      navigate("/");
-    } catch (err) {
-      console.error("❌ handleSubmit error:", err);
-      setError(
-        err.message === "Failed to fetch"
-          ? "Could not connect to server. Please try again later."
-          : err.message
-      );
-    } finally {
-      setIsLoading(false);
+    if (!res.ok || data.result === "Invalid email or password") {
+      throw new Error(data.result || "Sign in failed");
     }
-  };
+
+    // ✅ Correctly extract name from `data.user`
+    const finalName = data.user?.name || email.split("@")[0];
+    const finalEmail = data.user?.email || email;
+
+    onSignIn(finalEmail, password, {
+      name: finalName,
+      email: finalEmail,
+    });
+
+    if (keepLoggedIn) {
+      localStorage.setItem("isSignedIn", "true");
+      localStorage.setItem(
+        "user",
+        JSON.stringify({ name: finalName, email: finalEmail })
+      );
+    }
+
+    navigate("/");
+  } catch (err) {
+    console.error("❌ handleSubmit error:", err);
+    setError(
+      err.message === "Failed to fetch"
+        ? "Could not connect to server. Please try again later."
+        : err.message
+    );
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
   return (
     <div
