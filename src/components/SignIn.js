@@ -10,6 +10,8 @@ import { ThemeContext } from "../context/ThemeContext";
 export default function SignIn({ onSignIn }) {
   const { darkMode } = useContext(ThemeContext);
   const navigate = useNavigate();
+const API_BASE_URL =
+  process.env.REACT_APP_API_URL || "http://localhost:5000";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -35,7 +37,8 @@ const handleGoogleSuccess = async (credentialResponse) => {
     console.log("Google JWT decoded:", decoded);
 
     // ✅ Send token to backend for verification
-    const res = await axios.post("http://localhost:5000/api/auth/google", { token });
+    const res = await axios.post(`${API_BASE_URL}/api/auth/google`, { token });
+
 
     const userData = res.data.user;
 
@@ -70,7 +73,7 @@ const handleGoogleSuccess = async (credentialResponse) => {
   setIsLoading(true);
 
   try {
-    const res = await fetch("http://localhost:5000/signin", {
+    const res = await fetch(`${API_BASE_URL}/signin`, {
       method: "POST",
       body: JSON.stringify({ email, password, keepLoggedIn }),
       headers: { "Content-Type": "application/json" },
