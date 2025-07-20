@@ -48,9 +48,11 @@ export default function MyInvoices() {
     }
     const fetchInvoices = async () => {
     try {
-  const res = await fetch(
-    `https://invoice-generator-backend-liard.vercel.app/invoices?userId=${user.id}`
-  );
+const userIdentifier = user.sub || user.id || user.email;
+const res = await fetch(
+  `https://invoice-generator-backend-liard.vercel.app/invoices?userId=${userIdentifier}`
+);
+
   const data = await res.json();
   setInvoices(data);
 }  catch (err) {

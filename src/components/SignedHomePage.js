@@ -667,12 +667,15 @@ const getCurrencySymbol = () => currencySymbols[icurrency] || "$";
  
  
  try {
-  const response = await fetch(
+const response = await fetch(
   "https://invoice-generator-backend-liard.vercel.app/invoice",
   {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(dataToSend),
+    body: JSON.stringify({
+      ...dataToSend,
+      userId: user.id || user.sub || user.email,  // ✅ attach the correct userId
+    }),
   }
 );
 
