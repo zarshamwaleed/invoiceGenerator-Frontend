@@ -484,7 +484,8 @@ const getCurrencySymbol = () => currencySymbols[icurrency] || "$";
     // Build the final invoice data object
     const invoiceDataToSave = {
       type: invoiceType || "INVOICE",
-      userId: user?.id || null,
+     userId: user?.id || user?.sub || user?.email || null,
+
       logo: ilogo || null,
       from: from.trim(),
       billTo: billTo.trim(),
@@ -631,7 +632,8 @@ const getCurrencySymbol = () => currencySymbols[icurrency] || "$";
  
    const dataToSend = {
      type: invoiceType || "INVOICE",
-     userId: user?.id || null,
+  userId: user?.id || user?.sub || user?.email || null,
+
      logo: ilogo || null,
      from: from.trim(),
      billTo: billTo.trim(),
@@ -747,34 +749,36 @@ const getCurrencySymbol = () => currencySymbols[icurrency] || "$";
 
   try {
     // Prepare the updated invoice data
-    const updatedInvoice = {
-      from,
-      billTo,
-      shipTo,
-      date,
-      paymentTerms,
-      dueDate,
-      poNumber,
-      currency: icurrency,
-      amountPaid,
-      lineItems: items.map(item => ({
-        description: item.description,
-        quantity: item.quantity,
-        rate: item.price,
-        amount: item.amount
-      })),
-      notes,
-      terms,
-      invoiceNumber,
-      shipping: shippingAmount,
-      taxRate,
-      taxAmount,
-      discountPercentage,
-      discountFixed,
-      isTaxPercentage,
-      isDiscountPercentage,
-      labels: { ...labels }
-    };
+ const updatedInvoice = {
+  userId: user?.id || user?.sub || user?.email || null,  
+  from,
+  billTo,
+  shipTo,
+  date,
+  paymentTerms,
+  dueDate,
+  poNumber,
+  currency: icurrency,
+  amountPaid,
+  lineItems: items.map(item => ({
+    description: item.description,
+    quantity: item.quantity,
+    rate: item.price,
+    amount: item.amount
+  })),
+  notes,
+  terms,
+  invoiceNumber,
+  shipping: shippingAmount,
+  taxRate,
+  taxAmount,
+  discountPercentage,
+  discountFixed,
+  isTaxPercentage,
+  isDiscountPercentage,
+  labels: { ...labels }
+};
+
 
     // Update the invoice in the database
   const response = await fetch(

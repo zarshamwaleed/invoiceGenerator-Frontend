@@ -1,17 +1,19 @@
 import React, { useState, useContext, useEffect } from "react";
-import { GoogleLogin } from "@react-oauth/google"; // ✅ Google Login button
+import { GoogleLogin } from "@react-oauth/google"; 
 import { jwtDecode } from "jwt-decode";
-
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import logo from "../images/logo.png";
 import { ThemeContext } from "../context/ThemeContext";
+import { AuthContext } from "../context/AuthContext";  // ✅ IMPORT AUTH CONTEXT
 
 export default function SignIn({ onSignIn }) {
   const { darkMode } = useContext(ThemeContext);
+  const { setUser } = useContext(AuthContext); // ✅ GET setUser FROM CONTEXT
   const navigate = useNavigate();
-const API_BASE_URL =
-  process.env.REACT_APP_API_URL || "http://localhost:5000";
+
+  const API_BASE_URL =
+    process.env.REACT_APP_API_URL || "http://localhost:5000";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -26,42 +28,43 @@ const API_BASE_URL =
   }, [navigate]);
 
   // ✅ Google Sign-In Success
-  // ✅ Google Sign-In Success Handler
-const handleGoogleSuccess = async (credentialResponse) => {
-  setIsLoading(true);
-  try {
-    const token = credentialResponse.credential;
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setIsLoading(true);
+    try {
+      const token = credentialResponse.credential;
+      const decoded = jwtDecode(token);
+      console.log("Google JWT decoded:", decoded);
 
-    // ✅ Correct import usage
-    const decoded = jwtDecode(token);
-    console.log("Google JWT decoded:", decoded);
+      // ✅ Verify token with backend
+      const res = await axios.post(
+        "https://invoice-generator-backend-liard.vercel.app/api/auth/google",
+        { token }
+      );
 
-    // ✅ Send token to backend for verification
-    const res = await axios.post("https://invoice-generator-backend-liard.vercel.app/api/auth/google", { token });
+      const userData = res.data.user;
 
+      // ✅ Save in AuthContext
+      setUser(userData);
 
+      // ✅ Still call old onSignIn if needed
+      onSignIn(userData.email, "", userData);
 
-    const userData = res.data.user;
+      if (keepLoggedIn) {
+        localStorage.setItem("isSignedIn", "true");
+        localStorage.setItem("user", JSON.stringify(userData));
+      }
 
-    onSignIn(userData.email, "", userData);
-
-    if (keepLoggedIn) {
-      localStorage.setItem("isSignedIn", "true");
-      localStorage.setItem("user", JSON.stringify(userData));
+      navigate("/");
+    } catch (err) {
+      console.error("❌ Google login error:", err);
+      setError(
+        err.response?.data?.error ||
+          "Google sign-in failed. Please try again."
+      );
+    } finally {
+      setIsLoading(false);
     }
-
-    navigate("/");
-  } catch (err) {
-    console.error("❌ Google login error:", err);
-    setError(
-      err.response?.data?.error ||
-        "Google sign-in failed. Please try again."
-    );
-  } finally {
-    setIsLoading(false);
-  }
-};
-
+  };
 
   // ✅ Google Sign-In Error
   const handleGoogleError = () => {
@@ -69,54 +72,59 @@ const handleGoogleSuccess = async (credentialResponse) => {
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  setError("");
-  setIsLoading(true);
+    e.preventDefault();
+    setError("");
+    setIsLoading(true);
 
-  try {
-    const res = await fetch("https://invoice-generator-backend-liard.vercel.app/signin", {
-      method: "POST",
-      body: JSON.stringify({ email, password, keepLoggedIn }),
-      headers: { "Content-Type": "application/json" },
-    });
-
-    const data = await res.json();
-    console.log("🔹 Backend Signin Response:", data);
-
-    if (!res.ok || data.result === "Invalid email or password") {
-      throw new Error(data.result || "Sign in failed");
-    }
-
-    // ✅ Correctly extract name from `data.user`
-    const finalName = data.user?.name || email.split("@")[0];
-    const finalEmail = data.user?.email || email;
-
-    onSignIn(finalEmail, password, {
-      name: finalName,
-      email: finalEmail,
-    });
-
-    if (keepLoggedIn) {
-      localStorage.setItem("isSignedIn", "true");
-      localStorage.setItem(
-        "user",
-        JSON.stringify({ name: finalName, email: finalEmail })
+    try {
+      const res = await fetch(
+        "https://invoice-generator-backend-liard.vercel.app/signin",
+        {
+          method: "POST",
+          body: JSON.stringify({ email, password, keepLoggedIn }),
+          headers: { "Content-Type": "application/json" },
+        }
       );
+
+      const data = await res.json();
+      console.log("🔹 Backend Signin Response:", data);
+
+      if (!res.ok || data.result === "Invalid email or password") {
+        throw new Error(data.result || "Sign in failed");
+      }
+
+      const finalName = data.user?.name || email.split("@")[0];
+      const finalEmail = data.user?.email || email;
+
+      const loggedInUser = {
+        name: finalName,
+        email: finalEmail,
+        id: data.user?._id || data.user?.id || null, // ✅ store id if backend returns it
+      };
+
+      // ✅ Save in AuthContext
+      setUser(loggedInUser);
+
+      // ✅ Still call old onSignIn
+      onSignIn(finalEmail, password, loggedInUser);
+
+      if (keepLoggedIn) {
+        localStorage.setItem("isSignedIn", "true");
+        localStorage.setItem("user", JSON.stringify(loggedInUser));
+      }
+
+      navigate("/");
+    } catch (err) {
+      console.error("❌ handleSubmit error:", err);
+      setError(
+        err.message === "Failed to fetch"
+          ? "Could not connect to server. Please try again later."
+          : err.message
+      );
+    } finally {
+      setIsLoading(false);
     }
-
-    navigate("/");
-  } catch (err) {
-    console.error("❌ handleSubmit error:", err);
-    setError(
-      err.message === "Failed to fetch"
-        ? "Could not connect to server. Please try again later."
-        : err.message
-    );
-  } finally {
-    setIsLoading(false);
-  }
-};
-
+  };
 
   return (
     <div
