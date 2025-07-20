@@ -15,7 +15,7 @@ export const AuthProvider = ({ children }) => {
 
       // ✅ Validate from backend (optional)
       axios
-        .get(`http://localhost:5000/auth/me?email=${parsed.email}`)
+        .get(`https://invoice-generator-backend-liard.vercel.app/auth/me?email=${parsed.email}`)
         .then((res) => {
           setUser(res.data.user); // always latest user data
         })
