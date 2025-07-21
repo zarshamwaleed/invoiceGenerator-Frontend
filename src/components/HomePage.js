@@ -409,28 +409,30 @@ const handleSubmit = async () => {
   setInvoiceData(invoiceDataToSave);
 
   try {
-    const response = await fetch(
-      "https://invoice-generator-backend-liard.vercel.app/invoice",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(invoiceDataToSave),
-      }
-    );
+  const response = await fetch(
+    "https://invoice-generator-backend-liard.vercel.app/invoice",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(invoiceDataToSave),
+      credentials: 'include' // Only if you're using cookies/auth
+    }
+  );
 
-    if (!response.ok) throw new Error("Failed to save invoice");
-
-    const result = await response.json();
-    console.log("✅ Invoice saved:", result);
-
-    return result;
-
-  } catch (error) {
-    console.error("❌ Error saving invoice:", error);
-    throw error;
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || "Failed to save invoice");
   }
+
+  const result = await response.json();
+  console.log("✅ Invoice saved:", result);
+  return result;
+} catch (error) {
+  console.error("❌ Error saving invoice:", error.message);
+  throw error;
+}
 };
 
 
