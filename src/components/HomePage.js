@@ -1035,65 +1035,63 @@ const checkInvoiceExists = async (invoiceNumber) => {
       />
     </div>
 
-    {/* Date Field */}
-    <div className="flex flex-col sm:flex-row sm:items-center w-full sm:w-[80%] ml-auto gap-2 sm:gap-x-4">
-      <div className="flex items-center">
-        {isEditingLabel === "date" ? (
-          <div className="flex items-center w-full sm:w-32">
-            <input
-              type="text"
-              value={tempLabelValue}
-              onChange={(e) => setTempLabelValue(e.target.value)}
-              className={`border rounded px-2 py-1 w-full mr-2 ${
-                darkMode
-                  ? "bg-gray-700 border-gray-600 text-white"
-                  : "bg-white border-gray-300 text-gray-900"
-              }`}
-            />
-            <button
-              onClick={saveLabel}
-              className={`text-xs mr-1 ${
-                darkMode ? "text-green-400" : "text-green-600"
-              }`}
-            >
-              ✓
-            </button>
-            <button
-              onClick={cancelEditingLabel}
-              className={`text-xs ${
-                darkMode ? "text-red-400" : "text-red-500"
-              }`}
-            >
-              ×
-            </button>
-          </div>
-        ) : (
-          <label
-            className={`w-full sm:w-32 text-sm font-medium ${
-              darkMode ? "text-white" : "text-gray-800"
-            } cursor-pointer`}
-            onClick={() => startEditingLabel("date")}
-          >
-            {labels.date}
-          </label>
-        )}
-      </div>
-
-      <input
-        type="text"
-        placeholder="Date"
-        value={date}
-        onChange={(e) => setDate(e.target.value)}
-        onFocus={(e) => (e.target.type = "date")}
-        onBlur={(e) => (e.target.type = "text")}
-        className={`w-full sm:flex-1 border rounded px-3 py-2 transition-colors duration-300 
-          ${
+ {/* Date Field */}
+<div className="flex flex-col sm:flex-row sm:items-center w-full sm:w-[80%] ml-auto gap-2 sm:gap-x-4">
+  <div className="flex items-center">
+    {isEditingLabel === "date" ? (
+      <div className="flex items-center w-full sm:w-32">
+        <input
+          type="text"
+          value={tempLabelValue}
+          onChange={(e) => setTempLabelValue(e.target.value)}
+          className={`border rounded px-2 py-1 w-full mr-2 ${
             darkMode
-              ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500"
-              : "bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-blue-500"
+              ? "bg-gray-700 border-gray-600 text-white"
+              : "bg-white border-gray-300 text-gray-900"
           }`}
-      />
-    </div>
+        />
+        <button
+          onClick={saveLabel}
+          className={`text-xs mr-1 ${
+            darkMode ? "text-green-400" : "text-green-600"
+          }`}
+        >
+          ✓
+        </button>
+        <button
+          onClick={cancelEditingLabel}
+          className={`text-xs ${
+            darkMode ? "text-red-400" : "text-red-500"
+          }`}
+        >
+          ×
+        </button>
+      </div>
+    ) : (
+      <label
+        className={`w-full sm:w-32 text-sm font-medium ${
+          darkMode ? "text-white" : "text-gray-800"
+        } cursor-pointer`}
+        onClick={() => startEditingLabel("date")}
+      >
+        {labels.date}
+      </label>
+    )}
+  </div>
+
+  {/* Date input with dark mode calendar icon fix */}
+  <input
+    type="date"
+    value={date}
+    onChange={(e) => setDate(e.target.value)}
+    className={`w-full sm:flex-1 border rounded px-3 py-2 transition-colors duration-300 
+      ${
+        darkMode
+          ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 dark-calendar-icon"
+          : "bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-blue-500"
+      }`}
+  />
+</div>
 
     {/* Payment Terms */}
     <div className="flex flex-col sm:flex-row sm:items-center w-full sm:w-[80%] ml-auto gap-2 sm:gap-x-4">
@@ -1153,64 +1151,62 @@ const checkInvoiceExists = async (invoiceNumber) => {
     </div>
 
     {/* Due Date */}
-    <div className="flex flex-col sm:flex-row sm:items-center w-full sm:w-[80%] ml-auto gap-2 sm:gap-x-4">
-      <div className="flex items-center">
-        {isEditingLabel === "dueDate" ? (
-          <div className="flex items-center w-full sm:w-32">
-            <input
-              type="text"
-              value={tempLabelValue}
-              onChange={(e) => setTempLabelValue(e.target.value)}
-              className={`border rounded px-2 py-1 w-full mr-2 ${
-                darkMode
-                  ? "bg-gray-700 border-gray-600 text-white"
-                  : "bg-white border-gray-300 text-gray-900"
-              }`}
-            />
-            <button
-              onClick={saveLabel}
-              className={`text-xs mr-1 ${
-                darkMode ? "text-green-400" : "text-green-600"
-              }`}
-            >
-              ✓
-            </button>
-            <button
-              onClick={cancelEditingLabel}
-              className={`text-xs ${
-                darkMode ? "text-red-400" : "text-red-500"
-              }`}
-            >
-              ×
-            </button>
-          </div>
-        ) : (
-          <label
-            className={`w-full sm:w-32 text-sm font-medium ${
-              darkMode ? "text-white" : "text-gray-800"
-            } cursor-pointer`}
-            onClick={() => startEditingLabel("dueDate")}
-          >
-            {labels.dueDate}
-          </label>
-        )}
-      </div>
-
-      <input
-        type="text"
-        placeholder="Due Date"
-        value={dueDate}
-        onChange={(e) => setDueDate(e.target.value)}
-        onFocus={(e) => (e.target.type = "date")}
-        onBlur={(e) => (e.target.type = "text")}
-        className={`w-full sm:flex-1 border rounded px-3 py-2 transition-colors duration-300 
-          ${
+<div className="flex flex-col sm:flex-row sm:items-center w-full sm:w-[80%] ml-auto gap-2 sm:gap-x-4">
+  <div className="flex items-center">
+    {isEditingLabel === "dueDate" ? (
+      <div className="flex items-center w-full sm:w-32">
+        <input
+          type="text"
+          value={tempLabelValue}
+          onChange={(e) => setTempLabelValue(e.target.value)}
+          className={`border rounded px-2 py-1 w-full mr-2 ${
             darkMode
-              ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500"
-              : "bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-blue-500"
+              ? "bg-gray-700 border-gray-600 text-white"
+              : "bg-white border-gray-300 text-gray-900"
           }`}
-      />
-    </div>
+        />
+        <button
+          onClick={saveLabel}
+          className={`text-xs mr-1 ${
+            darkMode ? "text-green-400" : "text-green-600"
+          }`}
+        >
+          ✓
+        </button>
+        <button
+          onClick={cancelEditingLabel}
+          className={`text-xs ${
+            darkMode ? "text-red-400" : "text-red-500"
+          }`}
+        >
+          ×
+        </button>
+      </div>
+    ) : (
+      <label
+        className={`w-full sm:w-32 text-sm font-medium ${
+          darkMode ? "text-white" : "text-gray-800"
+        } cursor-pointer`}
+        onClick={() => startEditingLabel("dueDate")}
+      >
+        {labels.dueDate}
+      </label>
+    )}
+  </div>
+
+  {/* Date input with dark mode calendar icon fix */}
+  <input
+    type="date"
+    value={dueDate}
+    onChange={(e) => setDueDate(e.target.value)}
+    className={`w-full sm:flex-1 border rounded px-3 py-2 transition-colors duration-300 
+      ${
+        darkMode
+          ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 dark-calendar-icon"
+          : "bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-blue-500"
+      }`}
+  />
+</div>
 
     {/* PO Number */}
     <div className="flex flex-col sm:flex-row sm:items-center w-full sm:w-[80%] ml-auto gap-2 sm:gap-x-4">

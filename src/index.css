@@ -1,3 +1,12 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+/* Make calendar icon white when in dark mode */
+.dark-calendar-icon::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+}
+
+/* Firefox (partial support) */
+.dark-calendar-icon::-moz-calendar-picker-indicator {
+  filter: invert(1);
+}

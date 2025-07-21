@@ -140,9 +140,15 @@ export default function Navbar() {
           </Link>
 
           {/* Hamburger Icon */}
-          <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="md:hidden text-2xl">
-            {mobileMenuOpen ? "✖" : "☰"}
-          </button>
+          <button
+  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+  className={`md:hidden text-2xl transition-colors duration-300 ${
+    darkMode ? "text-white" : "text-gray-800"
+  }`}
+>
+  {mobileMenuOpen ? "✖" : "☰"}
+</button>
+
         </div>
       </div>
 
