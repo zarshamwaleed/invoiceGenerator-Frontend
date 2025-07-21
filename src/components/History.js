@@ -250,9 +250,9 @@ catch (error) {
       )}
 
       <div className="text-sm mt-6">
-        <p className={`mb-2 ${darkMode ? 'text-rose-400' : 'text-rose-500'}`}>
+        {/* <p className={`mb-2 ${darkMode ? 'text-rose-400' : 'text-rose-500'}`}>
           ⚠️ These invoices are stored in our database. You can access them from any device.
-        </p>
+        </p> */}
         <button
           onClick={eraseEverything}
           className="bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded"
