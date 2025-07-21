@@ -1079,18 +1079,19 @@ const checkInvoiceExists = async (invoiceNumber) => {
     )}
   </div>
 
-  {/* Date input with dark mode calendar icon fix */}
-  <input
-    type="date"
-    value={date}
-    onChange={(e) => setDate(e.target.value)}
-    className={`w-full sm:flex-1 min-w-0 border rounded px-3 py-2 transition-colors duration-300 
-      ${
+  {/* Date input with fixed width */}
+  <div className="w-full sm:flex-1">
+    <input
+      type="date"
+      value={date}
+      onChange={(e) => setDate(e.target.value)}
+      className={`w-full border rounded px-3 py-2 transition-colors duration-300 ${
         darkMode
           ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 dark-calendar-icon"
           : "bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-blue-500"
       }`}
-  />
+    />
+  </div>
 </div>
     {/* Payment Terms */}
     <div className="flex flex-col sm:flex-row sm:items-center w-full sm:w-[80%] ml-auto gap-2 sm:gap-x-4">
@@ -1149,7 +1150,7 @@ const checkInvoiceExists = async (invoiceNumber) => {
       />
     </div>
 
-    {/* Due Date */}
+{/* Due Date Field */}
 <div className="flex flex-col sm:flex-row sm:items-center w-full sm:w-[80%] ml-auto gap-2 sm:gap-x-4">
   <div className="flex items-center">
     {isEditingLabel === "dueDate" ? (
@@ -1193,18 +1194,19 @@ const checkInvoiceExists = async (invoiceNumber) => {
     )}
   </div>
 
-  {/* Date input with dark mode calendar icon fix */}
-  <input
-    type="date"
-    value={dueDate}
-    onChange={(e) => setDueDate(e.target.value)}
-    className={`w-full sm:flex-1 min-w-0 border rounded px-3 py-2 transition-colors duration-300 
-      ${
+  {/* Due Date input with fixed width */}
+  <div className="w-full sm:flex-1">
+    <input
+      type="date"
+      value={dueDate}
+      onChange={(e) => setDueDate(e.target.value)}
+      className={`w-full border rounded px-3 py-2 transition-colors duration-300 ${
         darkMode
           ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 dark-calendar-icon"
           : "bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-blue-500"
       }`}
-  />
+    />
+  </div>
 </div>
 
     {/* PO Number */}
