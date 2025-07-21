@@ -346,9 +346,7 @@ const getCurrencySymbol = () => currencySymbols[icurrency] || "$";
   });
 
   // Update the handleSubmit function to update context and save to backend
-const handleSubmit = async (e) => {
-  e.preventDefault();
-
+const handleSubmit = async () => {
   // ✅ Get logged-in user (if any)
   const user = JSON.parse(localStorage.getItem("user"));
   
@@ -363,7 +361,7 @@ const handleSubmit = async (e) => {
   const balanceDue = calculateBalanceDue();
 
   const invoiceDataToSave = {
-    userId,  // ✅ always have either userId or visitorId
+    userId,
     type: invoiceType,
     logo: ilogo,
     from,
@@ -379,7 +377,7 @@ const handleSubmit = async (e) => {
     discount,
     shipping: shippingAmount,
     total,
-    amountPaid: amountPaid,
+    amountPaid,
     balanceDue,
     notes,
     terms,
@@ -432,38 +430,39 @@ const handleSubmit = async (e) => {
 };
 
 
+
   // Update the download handler
- const handleDownloadClick = async (e) => {
+const handleDownloadClick = async (e) => {
   e.preventDefault();
 
   try {
-    // First save invoice to database
-    const savedInvoice = await handleSubmit(e);
+    // ✅ Save invoice first
+    const savedInvoice = await handleSubmit();
 
-    // Update invoice number if returned by backend
+    // ✅ Update invoice number if backend returned it
     if (savedInvoice.invoice?.invoiceNumber) {
       setInvoiceNumber(savedInvoice.invoice.invoiceNumber);
     }
 
-    // Generate PDF
+    // ✅ Now generate PDF & navigate
     requestAnimationFrame(() => {
-      toPDF();
+      toPDF(); 
       navigate('/thankyou');
     });
 
   } catch (error) {
-  console.error("Error in download process:", error);
+    console.error("Error in download process:", error);
 
-  Swal.fire({
-    title: '❌ Failed to Generate Invoice',
-    text: 'Something went wrong during the download process. Please try again.',
-    icon: 'error',
-    confirmButtonText: 'OK',
-    confirmButtonColor: '#d33'
-  });
-}
-
+    Swal.fire({
+      title: '❌ Failed to Generate Invoice',
+      text: 'Something went wrong during the download process. Please try again.',
+      icon: 'error',
+      confirmButtonText: 'OK',
+      confirmButtonColor: '#d33'
+    });
+  }
 };
+
 
 const handleSaveDefault = async () => {
  if (!invoiceNumber) {
