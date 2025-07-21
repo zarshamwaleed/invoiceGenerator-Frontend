@@ -60,7 +60,7 @@ export default function Navbar() {
     sv: { help: "Hjälp", history: "Historik", guide: "Faktureringsguide", signIn: "Logga in", signUp: "Registrera", brand: "Faktura-Generator.com" },
     fi: { help: "Ohje", history: "Historia", guide: "Laskutusopas", signIn: "Kirjaudu sisään", signUp: "Rekisteröidy", brand: "Laskunluontiohjelma.com" },
     pl: { help: "Pomoc", history: "Historia", guide: "Przewodnik po fakturowaniu", signIn: "Zaloguj się", signUp: "Zarejestruj się", brand: "Generator-Faktur.com" },
-    // uk: { help: "Допомога", history: "Історія", guide: "Посібник з виставлення рахунків", signIn: "Увійти", signUp: "Зареєструватися", brand: "Генератор-Рахунків.com" }
+    uk: { help: "Допомога", history: "Історія", guide: "Посібник з виставлення рахунків", signIn: "Увійти", signUp: "Зареєструватися", brand: "Генератор-Рахунків.com" }
   };
 
   const handleLanguageChange = (language) => {
