@@ -33,22 +33,29 @@ export default function History() {
 
   const type = getTypeFromPath(location.pathname);
 
-  useEffect(() => {
-    const fetchInvoices = async () => {
-      try {
-  const response = await fetch('https://invoice-generator-backend-liard.vercel.app/invoices');
-  if (!response.ok) throw new Error('Failed to fetch invoices');
-  const data = await response.json();
-  setInvoices(data);
-}
-catch (error) {
-        console.error('Error fetching invoices:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchInvoices();
-  }, []);
+useEffect(() => {
+  const fetchInvoices = async () => {
+    try {
+      const user = JSON.parse(localStorage.getItem("user"));
+      const userId = user?.id || localStorage.getItem("visitorId"); // ✅ same logic
+
+      const response = await fetch(
+        `https://invoice-generator-backend-liard.vercel.app/invoices?userId=${userId}`
+      );
+
+      if (!response.ok) throw new Error("Failed to fetch invoices");
+      const data = await response.json();
+      setInvoices(data);
+    } catch (error) {
+      console.error("Error fetching invoices:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  fetchInvoices();
+}, []);
+
+
 
   const handleDelete = async (id) => {
   try {

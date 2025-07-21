@@ -346,8 +346,14 @@ const getCurrencySymbol = () => currencySymbols[icurrency] || "$";
   });
 
   // Update the handleSubmit function to update context and save to backend
-  const handleSubmit = async (e) => {
+const handleSubmit = async (e) => {
   e.preventDefault();
+
+  // ✅ Get logged-in user (if any)
+  const user = JSON.parse(localStorage.getItem("user"));
+  
+  // ✅ If logged in → use user.id, otherwise use visitorId
+  const userId = user?.id || localStorage.getItem("visitorId");
 
   // Calculate all amounts
   const subtotal = calculateSubtotal();
@@ -357,12 +363,13 @@ const getCurrencySymbol = () => currencySymbols[icurrency] || "$";
   const balanceDue = calculateBalanceDue();
 
   const invoiceDataToSave = {
-     type: invoiceType,
+    userId,  // ✅ always have either userId or visitorId
+    type: invoiceType,
     logo: ilogo,
     from,
     billTo,
     shipTo,
-    date: date || new Date().toISOString().split('T')[0],
+    date: date || new Date().toISOString().split("T")[0],
     paymentTerms,
     dueDate,
     poNumber,
@@ -377,36 +384,38 @@ const getCurrencySymbol = () => currencySymbols[icurrency] || "$";
     notes,
     terms,
     invoiceNumber: invoiceNumber || `INV-${Date.now()}`,
-    lineItems: items.map(item => ({
+    lineItems: items.map((item) => ({
       description: item.description,
       quantity: item.quantity,
       rate: item.price,
-      amount: item.amount
+      amount: item.amount,
     })),
     labels: {
       ...labels,
-      // Ensure all label fields are included
       from: labels.from || "From",
       billTo: labels.billTo || "Bill To",
       shipTo: labels.shipTo || "Ship To",
       paymentTerms: labels.paymentTerms || "Payment Terms",
       dueDate: labels.dueDate || "Due Date",
       poNumber: labels.poNumber || "PO Number",
-      currency: labels.currency || "Currency"
-    }
+      currency: labels.currency || "Currency",
+    },
   };
 
-  // Update context
+  // ✅ Update context (local state)
   setInvoiceData(invoiceDataToSave);
 
   try {
-   const response = await fetch("https://invoice-generator-backend-liard.vercel.app/invoice",{
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(invoiceDataToSave),
-    });
+    const response = await fetch(
+      "https://invoice-generator-backend-liard.vercel.app/invoice",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(invoiceDataToSave),
+      }
+    );
 
     if (!response.ok) {
       throw new Error("Failed to save invoice");
@@ -415,11 +424,13 @@ const getCurrencySymbol = () => currencySymbols[icurrency] || "$";
     const result = await response.json();
     console.log("✅ Invoice saved:", result);
     return result;
+
   } catch (error) {
     console.error("❌ Error saving invoice:", error);
     throw error;
   }
 };
+
 
   // Update the download handler
  const handleDownloadClick = async (e) => {

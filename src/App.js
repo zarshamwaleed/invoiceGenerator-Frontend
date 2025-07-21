@@ -22,11 +22,28 @@ import Purchase from './components/PurchaseOrder';
 import History from "./components/History";
 import Upgrade from "./components/Upgrade";
 import MyInvoices from './components/MyInvoices';
-// import Settings from "./components/Settings";
 import DeveloperSettings from './components/DeveloperSettings';
 import InvoicePage from './components/InvoicePage';
 
 import { InvoiceProvider, InvoiceContext } from './context/InvoiceContext';
+
+/* ✅ Generate a unique visitorId for guests */
+function ensureVisitorId() {
+  let visitorId = localStorage.getItem("visitorId");
+  if (!visitorId) {
+    // crypto.randomUUID() works in modern browsers. 
+    // If you want wider support, fallback to a custom random generator
+    visitorId = crypto.randomUUID();
+    localStorage.setItem("visitorId", visitorId);
+    console.log("✅ New visitorId created:", visitorId);
+  } else {
+    console.log("✅ Existing visitorId found:", visitorId);
+  }
+  return visitorId;
+}
+
+// Call it immediately so every user has an ID
+ensureVisitorId();
 
 /* ✅ ProtectedRoute Component */
 function ProtectedRoute({ isSignedIn, children }) {
