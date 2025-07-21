@@ -350,18 +350,23 @@ const handleSubmit = async () => {
   // ✅ Get logged-in user (if any)
   const user = JSON.parse(localStorage.getItem("user"));
   
-  // ✅ If logged in → use user.id, otherwise use visitorId
-  const userId = user?.id || localStorage.getItem("visitorId");
+  // ✅ Only send real userId if logged in, otherwise null
+  const userId = user?.id || null;
 
-  // Calculate all amounts
+  // ✅ Always include visitorId (guest tracking)
+  const visitorId = localStorage.getItem("visitorId");
+
+  // ✅ Calculate all amounts
   const subtotal = calculateSubtotal();
   const tax = calculateTaxAmount();
   const discount = calculateDiscountAmount();
   const total = calculateTotal();
   const balanceDue = calculateBalanceDue();
 
+  // ✅ Build invoice payload
   const invoiceDataToSave = {
-    userId,
+    userId,      // ✅ logged-in userId if valid, else null
+    visitorId,   // ✅ always set
     type: invoiceType,
     logo: ilogo,
     from,
@@ -400,7 +405,7 @@ const handleSubmit = async () => {
     },
   };
 
-  // ✅ Update context (local state)
+  // ✅ Save in state for PDF generation
   setInvoiceData(invoiceDataToSave);
 
   try {
@@ -415,12 +420,11 @@ const handleSubmit = async () => {
       }
     );
 
-    if (!response.ok) {
-      throw new Error("Failed to save invoice");
-    }
+    if (!response.ok) throw new Error("Failed to save invoice");
 
     const result = await response.json();
     console.log("✅ Invoice saved:", result);
+
     return result;
 
   } catch (error) {
@@ -428,6 +432,7 @@ const handleSubmit = async () => {
     throw error;
   }
 };
+
 
 
 

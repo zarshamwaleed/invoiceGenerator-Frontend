@@ -27,23 +27,16 @@ import InvoicePage from './components/InvoicePage';
 
 import { InvoiceProvider, InvoiceContext } from './context/InvoiceContext';
 
-/* ✅ Generate a unique visitorId for guests */
-function ensureVisitorId() {
-  let visitorId = localStorage.getItem("visitorId");
-  if (!visitorId) {
-    // crypto.randomUUID() works in modern browsers. 
-    // If you want wider support, fallback to a custom random generator
-    visitorId = crypto.randomUUID();
-    localStorage.setItem("visitorId", visitorId);
-    console.log("✅ New visitorId created:", visitorId);
-  } else {
-    console.log("✅ Existing visitorId found:", visitorId);
-  }
-  return visitorId;
+/* ✅ Ensure visitorId always exists for every visitor */
+if (!localStorage.getItem("visitorId")) {
+  const newVisitorId = window.crypto?.randomUUID 
+    ? crypto.randomUUID() 
+    : 'visitor-' + Math.random().toString(36).substring(2, 15);
+  localStorage.setItem("visitorId", newVisitorId);
+  console.log("✅ New visitorId created:", newVisitorId);
+} else {
+  console.log("✅ Existing visitorId found:", localStorage.getItem("visitorId"));
 }
-
-// Call it immediately so every user has an ID
-ensureVisitorId();
 
 /* ✅ ProtectedRoute Component */
 function ProtectedRoute({ isSignedIn, children }) {
