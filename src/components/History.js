@@ -40,7 +40,7 @@ useEffect(() => {
       const userId = user?.id || localStorage.getItem("visitorId"); // ✅ same logic
 
       const response = await fetch(
-        `https://invoice-generator-backend-liard.vercel.app/invoices?userId=${userId}`
+        `https://invoice-generator-backend-liard.vercel.app/invoices?visitorId=${userId}`
       );
 
       if (!response.ok) throw new Error("Failed to fetch invoices");
