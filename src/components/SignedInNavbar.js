@@ -1,7 +1,8 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import logo from '../images/logo.png';
 import { ThemeContext } from '../context/ThemeContext';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 export default function SignedInNavbar({ userName, email, onSignOut }) {
   const { darkMode, toggleTheme } = useContext(ThemeContext);
@@ -9,6 +10,7 @@ export default function SignedInNavbar({ userName, email, onSignOut }) {
   const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
   const [currentLanguage, setCurrentLanguage] = useState('English');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { i18n, t } = useTranslation();
   const navigate = useNavigate();
 
   const languages = [
@@ -31,40 +33,24 @@ export default function SignedInNavbar({ userName, email, onSignOut }) {
     { code: 'sv', name: 'Svenska (Swedish)', flag: '🇸🇪' },
     { code: 'fi', name: 'Suomi (Finnish)', flag: '🇫🇮' },
     { code: 'pl', name: 'Polski (Polish)', flag: '🇵🇱' },
-    { code: 'uk', name: 'Українська (Ukrainian)', flag: '🇺🇦' }
+    { code: 'uk', name: 'Українська (Ukrainian)', flag: '🇺🇦' },
+    { code: 'ur', name: 'اردو (Urdu)', flag: '🇵🇰' },
   ];
 
-  const translations = {
-    en: { brand: 'Invoice-Generator.com', myInvoices: 'My Invoices', settings: 'Settings', upgrade: 'Upgrade', myAccount: 'My Account', signOut: 'Sign Out' },
-    zh: { brand: '发票生成器.com', myInvoices: '我的发票', settings: '设置', upgrade: '升级', myAccount: '我的账户', signOut: '登出' },
-    es: { brand: 'Generador-de-Facturas.com', myInvoices: 'Mis Facturas', settings: 'Configuraciones', upgrade: 'Mejorar', myAccount: 'Mi Cuenta', signOut: 'Cerrar sesión' },
-    fr: { brand: 'Générateur-de-Factures.com', myInvoices: 'Mes Factures', settings: 'Paramètres', upgrade: 'Mettre à niveau', myAccount: 'Mon Compte', signOut: 'Se Déconnecter' },
-    de: { brand: 'Rechnungs-Generator.com', myInvoices: 'Meine Rechnungen', settings: 'Einstellungen', upgrade: 'Upgrade', myAccount: 'Mein Konto', signOut: 'Abmelden' },
-    it: { brand: 'Generatore-di-Fatture.com', myInvoices: 'Le mie Fatture', settings: 'Impostazioni', upgrade: 'Aggiorna', myAccount: 'Il mio Account', signOut: 'Disconnettersi' },
-    pt: { brand: 'Gerador-de-Faturas.com', myInvoices: 'Minhas Faturas', settings: 'Configurações', upgrade: 'Atualizar', myAccount: 'Minha Conta', signOut: 'Sair' },
-    ru: { brand: 'Генератор-Счетов.com', myInvoices: 'Мои счета', settings: 'Настройки', upgrade: 'Обновить', myAccount: 'Мой аккаунт', signOut: 'Выйти' },
-    ja: { brand: '請求書ジェネレーター.com', myInvoices: '請求書', settings: '設定', upgrade: 'アップグレード', myAccount: 'マイアカウント', signOut: 'サインアウト' },
-    ko: { brand: '송장-생성기.com', myInvoices: '내 송장', settings: '설정', upgrade: '업그레이드', myAccount: '내 계정', signOut: '로그아웃' },
-    ar: { brand: 'منشئ-الفواتير.com', myInvoices: 'فواتيري', settings: 'الإعدادات', upgrade: 'الترقية', myAccount: 'حسابي', signOut: 'تسجيل الخروج' },
-    hi: { brand: 'चालान-जनरेटर.com', myInvoices: 'मेरे चालान', settings: 'सेटिंग्स', upgrade: 'अपग्रेड', myAccount: 'मेरा खाता', signOut: 'साइन आउट' },
-    bn: { brand: 'চালান-জেনারেটর.com', myInvoices: 'আমার চালান', settings: 'সেটিংস', upgrade: 'আপগ্রেড', myAccount: 'আমার অ্যাকাউন্ট', signOut: 'সাইন আউট' },
-    pa: { brand: 'ਇਨਵੌਇਸ-ਜਨਰੇਟਰ.com', myInvoices: 'ਮੇਰੇ ਇਨਵੌਇਸ', settings: 'ਸੈਟਿੰਗਾਂ', upgrade: 'ਅਪਗਰੇਡ', myAccount: 'ਮੇਰਾ ਅਕਾਊਂਟ', signOut: 'ਸਾਈਨ ਆਊਟ' },
-    tr: { brand: 'Fatura-Oluşturucu.com', myInvoices: 'Faturalarım', settings: 'Ayarlar', upgrade: 'Yükselt', myAccount: 'Hesabım', signOut: 'Çıkış Yap' },
-    nl: { brand: 'Factuur-Generator.com', myInvoices: 'Mijn Facturen', settings: 'Instellingen', upgrade: 'Upgrade', myAccount: 'Mijn Account', signOut: 'Uitloggen' },
-    sv: { brand: 'Faktura-Generator.com', myInvoices: 'Mina Fakturor', settings: 'Inställningar', upgrade: 'Uppgradera', myAccount: 'Mitt Konto', signOut: 'Logga ut' },
-    fi: { brand: 'Laskunluontiohjelma.com', myInvoices: 'Omat Laskut', settings: 'Asetukset', upgrade: 'Päivitä', myAccount: 'Oma Tili', signOut: 'Kirjaudu Ulos' },
-    pl: { brand: 'Generator-Faktur.com', myInvoices: 'Moje Faktury', settings: 'Ustawienia', upgrade: 'Uaktualnij', myAccount: 'Moje Konto', signOut: 'Wyloguj się' },
-    uk: { brand: 'Генератор-Рахунків.com', myInvoices: 'Мої рахунки', settings: 'Налаштування', upgrade: 'Оновити', myAccount: 'Мій акаунт', signOut: 'Вийти' }
-  };
+  useEffect(() => {
+    const storedLangCode = localStorage.getItem('language');
+    const foundLang = languages.find((lang) => lang.code === storedLangCode);
+    if (storedLangCode && foundLang) {
+      setCurrentLanguage(foundLang.name);
+      i18n.changeLanguage(storedLangCode);
+    }
+  }, [i18n.language]);
 
   const handleLanguageChange = (language) => {
     setCurrentLanguage(language.name);
+    i18n.changeLanguage(language.code);
+    localStorage.setItem('language', language.code);
     setShowLanguageDropdown(false);
-  };
-
-  const getTranslation = (key) => {
-    const langCode = languages.find(lang => lang.name === currentLanguage)?.code || 'en';
-    return translations[langCode]?.[key] || translations.en[key];
   };
 
   return (
@@ -74,7 +60,7 @@ export default function SignedInNavbar({ userName, email, onSignOut }) {
         <div className="flex items-center space-x-2 cursor-pointer" onClick={() => navigate('/signinHomepage')}>
           <img src={logo} alt="Logo" className="h-8" />
           <span className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-            {getTranslation('brand')}
+            {t('brand')}
           </span>
         </div>
 
@@ -85,13 +71,13 @@ export default function SignedInNavbar({ userName, email, onSignOut }) {
             onClick={() => window.location.href = '/my-invoices'}
             className={`${darkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-black'}`}
           >
-            {getTranslation('myInvoices')}
+            {t('myInvoices')}
           </button>
           <button
             onClick={() => navigate('/upgrade')}
             className="px-4 py-1.5 rounded text-white bg-green-600 hover:bg-green-700"
           >
-            {getTranslation('upgrade')}
+            {t('upgrade')}
           </button>
         </div>
 
@@ -153,7 +139,7 @@ export default function SignedInNavbar({ userName, email, onSignOut }) {
                   className={`block w-full text-left px-4 py-2 text-sm ${darkMode ? 'hover:bg-gray-600 text-gray-300' : 'hover:bg-gray-100 text-gray-700'}`}
                   onClick={() => navigate('/settings')}
                 >
-                  {getTranslation('myAccount')}
+                  {t('myAccount')}
                 </button>
                 <button
                   className={`block w-full text-left px-4 py-2 text-sm text-red-500 ${darkMode ? 'hover:bg-gray-600' : 'hover:bg-red-100'}`}
@@ -162,7 +148,7 @@ export default function SignedInNavbar({ userName, email, onSignOut }) {
                     onSignOut();
                   }}
                 >
-                  {getTranslation('signOut')}
+                  {t('signOut')}
                 </button>
               </div>
             </div>
@@ -189,7 +175,7 @@ export default function SignedInNavbar({ userName, email, onSignOut }) {
             }}
             className="block w-full text-left py-2"
           >
-            {getTranslation('myInvoices')}
+            {t('myInvoices')}
           </button>
           <button
             onClick={() => {
@@ -198,7 +184,7 @@ export default function SignedInNavbar({ userName, email, onSignOut }) {
             }}
             className="block w-full text-left py-2 bg-green-600 text-white rounded hover:bg-green-700"
           >
-            {getTranslation('upgrade')}
+            {t('upgrade')}
           </button>
         </div>
       )}

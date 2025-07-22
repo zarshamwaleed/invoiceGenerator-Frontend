@@ -6,12 +6,12 @@ import axios from "axios";
 import logo from "../images/logo.png";
 import { ThemeContext } from "../context/ThemeContext";
 import { AuthContext } from "../context/AuthContext";  // ✅ IMPORT AUTH CONTEXT
-
+import { useTranslation } from 'react-i18next';
 export default function SignIn({ onSignIn }) {
   const { darkMode } = useContext(ThemeContext);
   const { setUser } = useContext(AuthContext); // ✅ GET setUser FROM CONTEXT
   const navigate = useNavigate();
-
+ const { t } = useTranslation();
   const API_BASE_URL =
     process.env.REACT_APP_API_URL || "http://localhost:5000";
 
@@ -140,7 +140,7 @@ export default function SignIn({ onSignIn }) {
             darkMode ? "text-white" : "text-gray-800"
           }`}
         >
-          Invoice-Generator
+        {t("InvoiceGenerator")}
           <span
             className={`${
               darkMode ? "text-gray-400" : "text-gray-500"
@@ -162,14 +162,14 @@ export default function SignIn({ onSignIn }) {
             darkMode ? "text-white" : "text-gray-800"
           }`}
         >
-          Sign In
+         {t("SignIn")}
         </h2>
         <p
           className={`text-center text-sm mb-6 ${
             darkMode ? "text-gray-400" : "text-gray-500"
           }`}
         >
-          Welcome back!
+           {t("WelcomeBack")}
         </p>
 
         {error && (
@@ -190,12 +190,12 @@ export default function SignIn({ onSignIn }) {
               darkMode ? "text-gray-300" : "text-gray-600"
             }`}
           >
-            Email
+             {t("Email")}
           </label>
           <input
             id="email"
             type="email"
-            placeholder="Email"
+             placeholder={t("Email")}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -211,21 +211,14 @@ export default function SignIn({ onSignIn }) {
               htmlFor="password"
               className={darkMode ? "text-gray-300" : "text-gray-600"}
             >
-              Password
+                {t("Password")}
             </label>
-            <Link
-              to="#"
-              className={`${
-                darkMode ? "text-blue-400" : "text-blue-500"
-              } hover:underline`}
-            >
-              Forgot password?
-            </Link>
+        
           </div>
           <input
             id="password"
             type="password"
-            placeholder="Password"
+            placeholder={t("Password")}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -251,7 +244,7 @@ export default function SignIn({ onSignIn }) {
                 darkMode ? "text-gray-300" : "text-gray-700"
               }`}
             >
-              Keep me logged in
+           {t("KeepMeLoggedIn")}
             </label>
           </div>
 
@@ -287,10 +280,10 @@ export default function SignIn({ onSignIn }) {
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   ></path>
                 </svg>
-                Signing In...
+                 {t("SigningIn")}
               </>
             ) : (
-              "Sign In"
+             t("SignIn")
             )}
           </button>
         </form>
@@ -312,7 +305,7 @@ export default function SignIn({ onSignIn }) {
             darkMode ? "text-gray-400" : "text-gray-500"
           }`}
         >
-          Don't have an account?{" "}
+          {t("NoAccount")}{" "}
           <Link
             to="/signup"
             className={`${
@@ -321,7 +314,7 @@ export default function SignIn({ onSignIn }) {
                 : "text-emerald-600 hover:text-emerald-700"
             } hover:underline`}
           >
-            Sign Up
+              {t("SignUp")}
           </Link>
         </p>
       </div>

@@ -8,6 +8,9 @@ import { useNavigate } from "react-router-dom";
 import { usePDF } from "react-to-pdf";
 import { InvoiceContext } from "../context/InvoiceContext";
 import { useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next"; // <-- Added
+import i18n from "../i18n"; // adjust the path if needed
+
 export default function HomePage() {
   const { darkMode } = useContext(ThemeContext);
 
@@ -18,7 +21,7 @@ export default function HomePage() {
   const location = useLocation();
 
   const [isDownloading, setIsDownloading] = useState(false);
-
+ const { t, i18n } = useTranslation();
 
   // Helper to map pathname to invoice type
   const getInvoiceType = (path) => {
@@ -104,56 +107,120 @@ export default function HomePage() {
   ]);
 
   // Labels - initialize from context with fallback defaults
-  const [labels, setLabels] = useState(
-    invoiceData.labels || {
-      billTo: "Bill To",
-      shipTo: "Ship To",
-      date: "Date",
-      paymentTerms: "Payment Terms",
-      dueDate: "Due Date",
-      poNumber: "PO Number",
-      item: "Item",
-      quantity: "Quantity",
-      rate: "Rate",
-      amount: "Amount",
-      notes: "Notes",
-      terms: "Terms",
-      subtotal: "Subtotal",
-      tax: "Tax",
-      discount: "Discount",
-      shipping: "Shipping",
-      total: "Total",
-      amountPaid: "Amount Paid",
-      balanceDue: "Balance Due",
-    }
-  );
+ const [labels, setLabels] = useState(
+  invoiceData.labels || {
+    billTo: t("Bill To"),
+    shipTo: t("Ship To"),
+    date: t("Date"),
+    paymentTerms: t("Payment Terms"),
+    dueDate: t("Due Date"),
+    poNumber: t("PO Number"),
+    item: t("Item"),
+    quantity: t("Quantity"),
+    rate: t("Rate"),
+    amount: t("Amount"),
+    notes: t("Notes"),
+    terms: t("Terms"),
+    subtotal: t("Subtotal"),
+    tax: t("Tax"),
+    discount: t("Discount"),
+    shipping: t("Shipping"),
+    total: t("Total"),
+    amountPaid: t("Amount Paid"),
+    balanceDue: t("Balance Due"),
+  }
+);
 
-  const [ilabels, setiLabels] = useState({
-    item: "Item",
-    quantity: "Quantity",
-    rate: "Rate",
-    amount: "Amount",
-    notes: "Notes",
-    terms: "Terms",
-    subtotal: "Subtotal",
-    tax: "Tax",
-    discount: "Discount",
-    shipping: "Shipping",
-    total: "Total",
-    amountPaid: "Amount Paid",
-    balanceDue: "Balance Due",
-    from: "From",
-    billTo: "Bill To",
-    shipTo: "Ship To",
-    paymentTerms: "Payment Terms",
-    dueDate: "Due Date",
-    poNumber: "PO Number",
-    currency: "Currency",
-  });
+const [ilabels, setiLabels] = useState({
+  item: t("Item"),
+  quantity: t("Quantity"),
+  rate: t("Rate"),
+  amount: t("Amount"),
+  notes: t("Notes"),
+  terms: t("Terms"),
+  subtotal: t("Subtotal"),
+  tax: t("Tax"),
+  discount: t("Discount"),
+  shipping: t("Shipping"),
+  total: t("Total"),
+  amountPaid: t("Amount Paid"),
+  balanceDue: t("Balance Due"),
+  from: t("From"),
+  billTo: t("Bill To"),
+  shipTo: t("Ship To"),
+  paymentTerms: t("Payment Terms"),
+  dueDate: t("Due Date"),
+  poNumber: t("PO Number"),
+  currency: t("Currency"),
+});
 
   // Label editing states
   const [isEditingLabel, setIsEditingLabel] = useState(null);
   const [tempLabelValue, setTempLabelValue] = useState("");
+
+useEffect(() => {
+  const handleLanguageChange = () => {
+    const updateLabel = (key, defaultText) =>
+      !labels[key] || labels[key] === defaultText ? t(defaultText) : labels[key];
+
+    const updateILabel = (key, defaultText) =>
+      !ilabels[key] || ilabels[key] === defaultText ? t(defaultText) : ilabels[key];
+
+    setLabels({
+      billTo: updateLabel("billTo", "Bill To"),
+      shipTo: updateLabel("shipTo", "Ship To"),
+      date: updateLabel("date", "Date"),
+      paymentTerms: updateLabel("paymentTerms", "Payment Terms"),
+      dueDate: updateLabel("dueDate", "Due Date"),
+      poNumber: updateLabel("poNumber", "PO Number"),
+      item: updateLabel("item", "Item"),
+      quantity: updateLabel("quantity", "Quantity"),
+      rate: updateLabel("rate", "Rate"),
+      amount: updateLabel("amount", "Amount"),
+      notes: updateLabel("notes", "Notes"),
+      terms: updateLabel("terms", "Terms"),
+      subtotal: updateLabel("subtotal", "Subtotal"),
+      tax: updateLabel("tax", "Tax"),
+      discount: updateLabel("discount", "Discount"),
+      shipping: updateLabel("shipping", "Shipping"),
+      total: updateLabel("total", "Total"),
+      amountPaid: updateLabel("amountPaid", "Amount Paid"),
+      balanceDue: updateLabel("balanceDue", "Balance Due"),
+    });
+
+    setiLabels({
+      item: updateILabel("item", "Item"),
+      quantity: updateILabel("quantity", "Quantity"),
+      rate: updateILabel("rate", "Rate"),
+      amount: updateILabel("amount", "Amount"),
+      notes: updateILabel("notes", "Notes"),
+      terms: updateILabel("terms", "Terms"),
+      subtotal: updateILabel("subtotal", "Subtotal"),
+      tax: updateILabel("tax", "Tax"),
+      discount: updateILabel("discount", "Discount"),
+      shipping: updateILabel("shipping", "Shipping"),
+      total: updateILabel("total", "Total"),
+      amountPaid: updateILabel("amountPaid", "Amount Paid"),
+      balanceDue: updateILabel("balanceDue", "Balance Due"),
+      from: updateILabel("from", "From"),
+      billTo: updateILabel("billTo", "Bill To"),
+      shipTo: updateILabel("shipTo", "Ship To"),
+      paymentTerms: updateILabel("paymentTerms", "Payment Terms"),
+      dueDate: updateILabel("dueDate", "Due Date"),
+      poNumber: updateILabel("poNumber", "PO Number"),
+      currency: updateILabel("currency", "Currency"),
+    });
+  };
+
+  i18n.on('languageChanged', handleLanguageChange); // listen when language is changed
+  handleLanguageChange(); // run once initially
+
+  return () => {
+    i18n.off('languageChanged', handleLanguageChange); // cleanup listener
+  };
+}, []);
+
+
 
 
   useEffect(() => {
@@ -404,15 +471,16 @@ export default function HomePage() {
         amount: item.amount,
       })),
       labels: {
-        ...labels,
-        from: labels.from || "From",
-        billTo: labels.billTo || "Bill To",
-        shipTo: labels.shipTo || "Ship To",
-        paymentTerms: labels.paymentTerms || "Payment Terms",
-        dueDate: labels.dueDate || "Due Date",
-        poNumber: labels.poNumber || "PO Number",
-        currency: labels.currency || "Currency",
-      },
+  ...labels,
+  from: labels.from || "from",
+  billTo: labels.billTo || "Bill To",
+  shipTo: labels.shipTo || "Ship To",
+  paymentTerms: labels.paymentTerms || "Payment Terms",
+  dueDate: labels.dueDate || "Due Date",
+  poNumber: labels.poNumber || "PO Number",
+  currency: labels.currency || "Currency",
+}
+
     };
 
     // ✅ Save in state for PDF generation
@@ -622,6 +690,7 @@ export default function HomePage() {
           <div className="mt-2 text-sm space-y-1">
             <p>
               <strong>{labels.date || "Date"}:</strong> {date}
+
             </p>
             <p>
               <strong>{labels.paymentTerms || "Payment Terms"}:</strong>{" "}
@@ -705,7 +774,7 @@ export default function HomePage() {
       <div className="flex justify-end mb-6">
         <div className="w-full max-w-sm space-y-1">
           <div className="flex justify-between">
-            <span>{labels.subtotal || "Subtotal"}:</span>
+            <span>{labels.subtotal || t("Subtotal")}:</span>
             <span>
               {getCurrencySymbol()}
               {calculateSubtotal().toFixed(2)}
@@ -714,7 +783,7 @@ export default function HomePage() {
           {(taxRate > 0 || taxAmount > 0) && (
             <div className="flex justify-between">
               <span>
-                {labels.tax || "Tax"} ({taxRate}%):
+                {labels.tax || t("Tax")} ({taxRate}%):
               </span>
               <span>
                 {getCurrencySymbol()}
@@ -724,7 +793,7 @@ export default function HomePage() {
           )}
           {shippingAmount > 0 && (
             <div className="flex justify-between">
-              <span>{labels.shipping || "Shipping"}:</span>
+              <span>{labels.shipping || t("Shipping")}:</span>
               <span>
                 {getCurrencySymbol()}
                 {(Number(shippingAmount) || 0).toFixed(2)}
@@ -733,7 +802,7 @@ export default function HomePage() {
           )}
           {(discountPercentage > 0 || discountFixed > 0) && (
             <div className="flex justify-between">
-              <span>{labels.discount || "Discount"}:</span>
+              <span>{labels.discount || t("Discount")}:</span>
               <span>
                 -{getCurrencySymbol()}
                 {calculateDiscountAmount().toFixed(2)}
@@ -748,14 +817,14 @@ export default function HomePage() {
             </span>
           </div>
           <div className="flex justify-between pt-1 text-sm">
-            <span>{labels.amountPaid || "Amount Paid"}:</span>
+            <span>{labels.amountPaid || t("Amount Paid")}:</span>
             <span>
               {getCurrencySymbol()}
               {(amountPaid ?? 0).toFixed(2)}
             </span>
           </div>
           <div className="flex justify-between font-bold pt-1 border-t mt-2 text-sm">
-            <span>{labels.balanceDue || "Balance Due"}:</span>
+            <span>{labels.balanceDue || t("Balance Due")}:</span>
             <span>
               {getCurrencySymbol()}
               {calculateBalanceDue().toFixed(2)}
@@ -811,18 +880,16 @@ export default function HomePage() {
       } transition-colors duration-300`}
     >
       <h1 className={`text-3xl font-bold mb-2 ${darkMode ? "text-white" : "text-gray-900"}`}>
-        Free Invoice Template
+       {t("HeroTitle")}
       </h1>
       <h2 className={`text-xl font-semibold mb-4 ${darkMode ? "text-gray-300" : "text-gray-700"}`}>
-        Make beautiful Invoices with one click!
+        {t("HeroSubtitle")}
       </h2>
       <p className={`mb-2 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
-        Welcome to the original Invoice Generator, trusted by millions of people. Invoice Generator
-        lets you instantly make Invoices with our attractive invoice template straight from your web
-        browser.
+          {t("HeroParagraph1")}
       </p>
       <p className={`mb-6 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
-        Did we also mention that Invoice Generator lets you generate an unlimited number of Invoices?
+        {t("HeroParagraph2")}
       </p>
       <button
         className={`px-4 py-2 rounded hover:bg-green-700 transition-colors duration-300 ${
@@ -830,7 +897,7 @@ export default function HomePage() {
         }`}
         onClick={handleHide}
       >
-        OK, got it!
+     {t("HeroCTA")}
       </button>
     </div>
   )}
@@ -874,9 +941,8 @@ export default function HomePage() {
                   ×
                 </button>
               </div>
-            ) : (
-              "+ Add Your Logo"
-            )}
+            ) :t("+ Add Your Logo")
+}
             <input
               type="file"
               ref={fileInputRef}
@@ -887,7 +953,8 @@ export default function HomePage() {
           </div>
 
           <input
-            placeholder="Who is this from?"
+            placeholder={t("Who is this from?")}
+
             value={from}
             onChange={(e) => setFrom(e.target.value)}
             className={`w-full border rounded px-3 py-2 transition-colors duration-300 ${
@@ -899,849 +966,858 @@ export default function HomePage() {
 
           <div className="flex space-x-4">
             {/* Bill To */}
-            <div className="flex-1">
-              <div className="flex items-center">
-                {isEditingLabel === "billTo" ? (
-                  <div className="flex items-center">
-                    <input
-                      type="text"
-                      value={tempLabelValue}
-                      onChange={(e) => setTempLabelValue(e.target.value)}
-                      className={`border rounded px-2 py-1 w-32 mr-2 ${
-                        darkMode
-                          ? "bg-gray-700 border-gray-600 text-white"
-                          : "bg-white border-gray-300 text-gray-900"
-                      }`}
-                    />
-                    <button
-                      onClick={saveLabel}
-                      className={`text-xs mr-1 ${
-                        darkMode ? "text-green-400" : "text-green-600"
-                      }`}
-                    >
-                      ✓
-                    </button>
-                    <button
-                      onClick={cancelEditingLabel}
-                      className={`text-xs ${
-                        darkMode ? "text-red-400" : "text-red-500"
-                      }`}
-                    >
-                      ×
-                    </button>
-                  </div>
-                ) : (
-                  <label
-                    className={`block mb-1 text-sm font-medium ${
-                      darkMode ? "text-white" : "text-gray-800"
-                    } cursor-pointer`}
-                    onClick={() => startEditingLabel("billTo")}
-                  >
-                    {labels.billTo}
-                  </label>
-                )}
-              </div>
-              <input
-                placeholder="Who is this to?"
-                value={billTo}
-                onChange={(e) => setBillTo(e.target.value)}
-                className={`w-full border rounded px-3 py-2 transition-colors duration-300 
-                    ${
-                      darkMode
-                        ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500"
-                        : "bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-blue-500"
-                    }`}
-              />
-            </div>
+          <div className="flex-1">
+  <div className="flex items-center">
+    {isEditingLabel === "billTo" ? (
+      <div className="flex items-center">
+        <input
+          type="text"
+          value={tempLabelValue}
+          onChange={(e) => setTempLabelValue(e.target.value)}
+          className={`border rounded px-2 py-1 w-32 mr-2 ${
+            darkMode
+              ? "bg-gray-700 border-gray-600 text-white"
+              : "bg-white border-gray-300 text-gray-900"
+          }`}
+        />
+        <button
+          onClick={saveLabel}
+          className={`text-xs mr-1 ${
+            darkMode ? "text-green-400" : "text-green-600"
+          }`}
+        >
+          ✓
+        </button>
+        <button
+          onClick={cancelEditingLabel}
+          className={`text-xs ${
+            darkMode ? "text-red-400" : "text-red-500"
+          }`}
+        >
+          ×
+        </button>
+      </div>
+    ) : (
+      <label
+        className={`block mb-1 text-sm font-medium ${
+          darkMode ? "text-white" : "text-gray-800"
+        } cursor-pointer`}
+        onClick={() => startEditingLabel("billTo")}
+      >
+        {labels.billTo || t("Bill To")}
+      </label>
+    )}
+  </div>
+  <input
+    placeholder={t("Who is this to?")}
+    value={billTo}
+    onChange={(e) => setBillTo(e.target.value)}
+    className={`w-full border rounded px-3 py-2 transition-colors duration-300 
+      ${
+        darkMode
+          ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500"
+          : "bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-blue-500"
+      }`}
+  />
+</div>
 
             {/* Ship To */}
-            <div className="flex-1">
-              <div className="flex items-center">
-                {isEditingLabel === "shipTo" ? (
-                  <div className="flex items-center">
-                    <input
-                      type="text"
-                      value={tempLabelValue}
-                      onChange={(e) => setTempLabelValue(e.target.value)}
-                      className={`border rounded px-2 py-1 w-32 mr-2 ${
-                        darkMode
-                          ? "bg-gray-700 border-gray-600 text-white"
-                          : "bg-white border-gray-300 text-gray-900"
-                      }`}
-                    />
-                    <button
-                      onClick={saveLabel}
-                      className={`text-xs mr-1 ${
-                        darkMode ? "text-green-400" : "text-green-600"
-                      }`}
-                    >
-                      ✓
-                    </button>
-                    <button
-                      onClick={cancelEditingLabel}
-                      className={`text-xs ${
-                        darkMode ? "text-red-400" : "text-red-500"
-                      }`}
-                    >
-                      ×
-                    </button>
-                  </div>
-                ) : (
-                  <label
-                    className={`block mb-1 text-sm font-medium ${
-                      darkMode ? "text-white" : "text-gray-800"
-                    } cursor-pointer`}
-                    onClick={() => startEditingLabel("shipTo")}
-                  >
-                    {labels.shipTo}
-                  </label>
-                )}
-              </div>
-
-              <input
-                placeholder="(optional)"
-                value={shipTo}
-                onChange={(e) => setShipTo(e.target.value)}
-                className={`w-full border rounded px-3 py-2 transition-colors duration-300 
-                    ${
-                      darkMode
-                        ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500"
-                        : "bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-blue-500"
-                    }`}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Middle section */}
-        <div className="flex-1 mt-10 lg:mt-0 lg:px-8">
-          <h2
-            className={`text-2xl font-semibold text-right pr-24 mb-2 ${
-              darkMode ? "text-white" : "text-gray-900"
-            }`}
-          >
-            INVOICE
-          </h2>
-
-          <div className="space-y-6">
-            {/* Invoice Number */}
-            <div className="flex flex-col sm:flex-row sm:items-center w-full sm:w-[80%] ml-auto gap-2 sm:gap-x-4">
-              <label
-                className={`w-full sm:w-32 text-sm font-medium ${
-                  darkMode ? "text-white" : "text-gray-800"
-                }`}
-              >
-                #
-              </label>
-
-              <input
-                placeholder="#"
-                value={invoiceNumber}
-                onChange={(e) => setInvoiceNumber(e.target.value)}
-                className={`w-full sm:flex-1 border rounded px-3 py-2 transition-colors duration-300 
-          ${
+           <div className="flex-1">
+  <div className="flex items-center">
+    {isEditingLabel === "shipTo" ? (
+      <div className="flex items-center">
+        <input
+          type="text"
+          value={tempLabelValue}
+          onChange={(e) => setTempLabelValue(e.target.value)}
+          className={`border rounded px-2 py-1 w-32 mr-2 ${
             darkMode
-              ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500"
-              : "bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-blue-500"
+              ? "bg-gray-700 border-gray-600 text-white"
+              : "bg-white border-gray-300 text-gray-900"
           }`}
-              />
-            </div>
-
-            {/* Date Field */}
-            <div className="flex flex-col sm:flex-row sm:items-center w-full sm:w-[80%] ml-auto gap-2 sm:gap-x-4">
-              <div className="flex items-center">
-                {isEditingLabel === "date" ? (
-                  <div className="flex items-center w-full sm:w-32">
-                    <input
-                      type="text"
-                      value={tempLabelValue}
-                      onChange={(e) => setTempLabelValue(e.target.value)}
-                      className={`border rounded px-2 py-1 w-full mr-2 ${
-                        darkMode
-                          ? "bg-gray-700 border-gray-600 text-white"
-                          : "bg-white border-gray-300 text-gray-900"
-                      }`}
-                    />
-                    <button
-                      onClick={saveLabel}
-                      className={`text-xs mr-1 ${
-                        darkMode ? "text-green-400" : "text-green-600"
-                      }`}
-                    >
-                      ✓
-                    </button>
-                    <button
-                      onClick={cancelEditingLabel}
-                      className={`text-xs ${
-                        darkMode ? "text-red-400" : "text-red-500"
-                      }`}
-                    >
-                      ×
-                    </button>
-                  </div>
-                ) : (
-                  <label
-                    className={`w-full sm:w-32 text-sm font-medium ${
-                      darkMode ? "text-white" : "text-gray-800"
-                    } cursor-pointer`}
-                    onClick={() => startEditingLabel("date")}
-                  >
-                    {labels.date}
-                  </label>
-                )}
-              </div>
-
-              {/* Date input with fixed width */}
-              <div className="w-full sm:flex-1">
-                <input
-                  type="date"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  className={`w-full border rounded px-3 py-2 transition-colors duration-300 ${
-                    darkMode
-                      ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 dark-calendar-icon"
-                      : "bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-blue-500"
-                  }`}
-                />
-              </div>
-            </div>
-            {/* Payment Terms */}
-            <div className="flex flex-col sm:flex-row sm:items-center w-full sm:w-[80%] ml-auto gap-2 sm:gap-x-4">
-              <div className="flex items-center">
-                {isEditingLabel === "paymentTerms" ? (
-                  <div className="flex items-center w-full sm:w-32">
-                    <input
-                      type="text"
-                      value={tempLabelValue}
-                      onChange={(e) => setTempLabelValue(e.target.value)}
-                      className={`border rounded px-2 py-1 w-full mr-2 ${
-                        darkMode
-                          ? "bg-gray-700 border-gray-600 text-white"
-                          : "bg-white border-gray-300 text-gray-900"
-                      }`}
-                    />
-                    <button
-                      onClick={saveLabel}
-                      className={`text-xs mr-1 ${
-                        darkMode ? "text-green-400" : "text-green-600"
-                      }`}
-                    >
-                      ✓
-                    </button>
-                    <button
-                      onClick={cancelEditingLabel}
-                      className={`text-xs ${
-                        darkMode ? "text-red-400" : "text-red-500"
-                      }`}
-                    >
-                      ×
-                    </button>
-                  </div>
-                ) : (
-                  <label
-                    className={`w-full sm:w-32 text-sm font-medium ${
-                      darkMode ? "text-white" : "text-gray-800"
-                    } cursor-pointer`}
-                    onClick={() => startEditingLabel("paymentTerms")}
-                  >
-                    {labels.paymentTerms}
-                  </label>
-                )}
-              </div>
-
-              <input
-                placeholder="Payment Terms"
-                value={paymentTerms}
-                onChange={(e) => setPaymentTerms(e.target.value)}
-                className={`w-full sm:flex-1 border rounded px-3 py-2 transition-colors duration-300 
-          ${
-            darkMode
-              ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500"
-              : "bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-blue-500"
-          }`}
-              />
-            </div>
-
-            {/* Due Date Field */}
-            <div className="flex flex-col sm:flex-row sm:items-center w-full sm:w-[80%] ml-auto gap-2 sm:gap-x-4">
-              <div className="flex items-center">
-                {isEditingLabel === "dueDate" ? (
-                  <div className="flex items-center w-full sm:w-32">
-                    <input
-                      type="text"
-                      value={tempLabelValue}
-                      onChange={(e) => setTempLabelValue(e.target.value)}
-                      className={`border rounded px-2 py-1 w-full mr-2 ${
-                        darkMode
-                          ? "bg-gray-700 border-gray-600 text-white"
-                          : "bg-white border-gray-300 text-gray-900"
-                      }`}
-                    />
-                    <button
-                      onClick={saveLabel}
-                      className={`text-xs mr-1 ${
-                        darkMode ? "text-green-400" : "text-green-600"
-                      }`}
-                    >
-                      ✓
-                    </button>
-                    <button
-                      onClick={cancelEditingLabel}
-                      className={`text-xs ${
-                        darkMode ? "text-red-400" : "text-red-500"
-                      }`}
-                    >
-                      ×
-                    </button>
-                  </div>
-                ) : (
-                  <label
-                    className={`w-full sm:w-32 text-sm font-medium ${
-                      darkMode ? "text-white" : "text-gray-800"
-                    } cursor-pointer`}
-                    onClick={() => startEditingLabel("dueDate")}
-                  >
-                    {labels.dueDate}
-                  </label>
-                )}
-              </div>
-
-              {/* Due Date input with fixed width */}
-              <div className="w-full sm:flex-1">
-                <input
-                  type="date"
-                  value={dueDate}
-                  onChange={(e) => setDueDate(e.target.value)}
-                  className={`w-full border rounded px-3 py-2 transition-colors duration-300 ${
-                    darkMode
-                      ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 dark-calendar-icon"
-                      : "bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-blue-500"
-                  }`}
-                />
-              </div>
-            </div>
-
-            {/* PO Number */}
-            <div className="flex flex-col sm:flex-row sm:items-center w-full sm:w-[80%] ml-auto gap-2 sm:gap-x-4">
-              <div className="flex items-center">
-                {isEditingLabel === "poNumber" ? (
-                  <div className="flex items-center w-full sm:w-32">
-                    <input
-                      type="text"
-                      value={tempLabelValue}
-                      onChange={(e) => setTempLabelValue(e.target.value)}
-                      className={`border rounded px-2 py-1 w-full mr-2 ${
-                        darkMode
-                          ? "bg-gray-700 border-gray-600 text-white"
-                          : "bg-white border-gray-300 text-gray-900"
-                      }`}
-                    />
-                    <button
-                      onClick={saveLabel}
-                      className={`text-xs mr-1 ${
-                        darkMode ? "text-green-400" : "text-green-600"
-                      }`}
-                    >
-                      ✓
-                    </button>
-                    <button
-                      onClick={cancelEditingLabel}
-                      className={`text-xs ${
-                        darkMode ? "text-red-400" : "text-red-500"
-                      }`}
-                    >
-                      ×
-                    </button>
-                  </div>
-                ) : (
-                  <label
-                    className={`w-full sm:w-32 text-sm font-medium ${
-                      darkMode ? "text-white" : "text-gray-800"
-                    } cursor-pointer`}
-                    onClick={() => startEditingLabel("poNumber")}
-                  >
-                    {labels.poNumber}
-                  </label>
-                )}
-              </div>
-
-              <input
-                placeholder="PO Number"
-                value={poNumber}
-                onChange={(e) => setPoNumber(e.target.value)}
-                className={`w-full sm:flex-1 border rounded px-3 py-2 transition-colors duration-300 
-          ${
-            darkMode
-              ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500"
-              : "bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-blue-500"
-          }`}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Right section */}
-        <div className="lg:w-48 mt-10 lg:mt-0 space-y-4 pt-20">
+        />
         <button
-  onClick={handleDownloadClick}
-  disabled={isDownloading}
-  className={`mt-6 w-full py-2 rounded flex justify-center items-center transition-colors duration-300 ${
-    darkMode
-      ? isDownloading
-        ? "bg-emerald-800 text-white cursor-not-allowed"
-        : "bg-emerald-700 hover:bg-emerald-600 text-white"
-      : isDownloading
-        ? "bg-emerald-500 text-white cursor-not-allowed"
-        : "bg-emerald-600 hover:bg-emerald-700 text-white"
-  }`}
->
-  {isDownloading ? (
-    <>
-      <svg
-        className="animate-spin h-5 w-5 mr-2 text-white"
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
+          onClick={saveLabel}
+          className={`text-xs mr-1 ${
+            darkMode ? "text-green-400" : "text-green-600"
+          }`}
+        >
+          ✓
+        </button>
+        <button
+          onClick={cancelEditingLabel}
+          className={`text-xs ${
+            darkMode ? "text-red-400" : "text-red-500"
+          }`}
+        >
+          ×
+        </button>
+      </div>
+    ) : (
+      <label
+        className={`block mb-1 text-sm font-medium ${
+          darkMode ? "text-white" : "text-gray-800"
+        } cursor-pointer`}
+        onClick={() => startEditingLabel("shipTo")}
       >
-        <circle
-          className="opacity-25"
-          cx="12"
-          cy="12"
-          r="10"
-          stroke="currentColor"
-          strokeWidth="4"
-        />
-        <path
-          className="opacity-75"
-          fill="currentColor"
-          d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"
-        />
-      </svg>
-      Preparing PDF...
-    </>
-  ) : (
-    "Download Invoice"
-  )}
-</button>
+        {labels.shipTo || t("Ship To")}
+      </label>
+    )}
+  </div>
 
+  <input
+    placeholder={t("(optional)")}
+    value={shipTo}
+    onChange={(e) => setShipTo(e.target.value)}
+    className={`w-full border rounded px-3 py-2 transition-colors duration-300 
+      ${
+        darkMode
+          ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500"
+          : "bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-blue-500"
+      }`}
+  />
+</div>
+          </div>
+        </div>
 
-          <div>
-            <label
-              className={`block text-sm mb-1 ${
-                darkMode ? "text-gray-300" : "text-gray-600"
-              }`}
-            >
-              Currency
-            </label>
-            <select
-              className={`w-full border rounded px-2 py-1 transition-colors duration-300 ${
+       {/* Middle section */}
+<div className="flex-1 mt-10 lg:mt-0 lg:px-8">
+  <h2
+    className={`text-2xl font-semibold text-right pr-24 mb-2 ${
+      darkMode ? "text-white" : "text-gray-900"
+    }`}
+  >
+    {t("INVOICE")}
+  </h2>
+
+  <div className="space-y-6">
+    {/* Invoice Number */}
+    <div className="flex flex-col sm:flex-row sm:items-center w-full sm:w-[80%] ml-auto gap-2 sm:gap-x-4">
+      <label
+        className={`w-full sm:w-32 text-sm font-medium ${
+          darkMode ? "text-white" : "text-gray-800"
+        }`}
+      >
+      {t("#")}
+      </label>
+      <input
+       placeholder={t("Invoice Number")}
+        value={invoiceNumber}
+        onChange={(e) => setInvoiceNumber(e.target.value)}
+        className={`w-full sm:flex-1 border rounded px-3 py-2 transition-colors duration-300 
+          ${
+            darkMode
+              ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500"
+              : "bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-blue-500"
+          }`}
+      />
+    </div>
+
+    {/* Date Field */}
+    <div className="flex flex-col sm:flex-row sm:items-center w-full sm:w-[80%] ml-auto gap-2 sm:gap-x-4">
+      <div className="flex items-center">
+        {isEditingLabel === "date" ? (
+          <div className="flex items-center w-full sm:w-32">
+            <input
+              type="text"
+              value={tempLabelValue}
+              onChange={(e) => setTempLabelValue(e.target.value)}
+              className={`border rounded px-2 py-1 w-full mr-2 ${
                 darkMode
                   ? "bg-gray-700 border-gray-600 text-white"
                   : "bg-white border-gray-300 text-gray-900"
               }`}
-              value={icurrency}
-              onChange={(e) => setiCurrency(e.target.value)}
+            />
+            <button
+              onClick={saveLabel}
+              className={`text-xs mr-1 ${
+                darkMode ? "text-green-400" : "text-green-600"
+              }`}
             >
-              <option value="USD">USD ($)</option>
-              <option value="EUR">EUR (€)</option>
-              <option value="GBP">GBP (£)</option>
-              <option value="JPY">JPY (¥)</option>
-              <option value="CNY">CNY (¥)</option>
-              <option value="AUD">AUD (A$)</option>
-              <option value="CAD">CAD (C$)</option>
-              <option value="CHF">CHF (CHF)</option>
-              <option value="INR">INR (₹)</option>
-              <option value="PKR">PKR (₨)</option>
-              <option value="ZAR">ZAR (R)</option>
-              <option value="SEK">SEK (kr)</option>
-              <option value="NOK">NOK (kr)</option>
-              <option value="DKK">DKK (kr)</option>
-              <option value="RUB">RUB (₽)</option>
-              <option value="SGD">SGD (S$)</option>
-              <option value="HKD">HKD (HK$)</option>
-              <option value="NZD">NZD (NZ$)</option>
-              <option value="THB">THB (฿)</option>
-              <option value="MYR">MYR (RM)</option>
-              <option value="SAR">SAR (﷼)</option>
-            </select>
+              ✓
+            </button>
+            <button
+              onClick={cancelEditingLabel}
+              className={`text-xs ${
+                darkMode ? "text-red-400" : "text-red-500"
+              }`}
+            >
+              ×
+            </button>
           </div>
-
-          <p
-            onClick={handleSaveDefault}
-            className={`text-sm cursor-pointer hover:underline ${
-              darkMode ? "text-green-400" : "text-green-600"
-            }`}
+        ) : (
+          <label
+            className={`w-full sm:w-32 text-sm font-medium ${
+              darkMode ? "text-white" : "text-gray-800"
+            } cursor-pointer`}
+            onClick={() => startEditingLabel("date")}
           >
-            Save Default
-          </p>
-        </div>
+            {labels.date || t("Date")}
+          </label>
+        )}
+      </div>
+      <div className="w-full sm:flex-1">
+        <input
+          type="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+          className={`w-full border rounded px-3 py-2 transition-colors duration-300 ${
+            darkMode
+              ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 dark-calendar-icon"
+              : "bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-blue-500"
+          }`}
+        />
+      </div>
+    </div>
+
+    {/* Payment Terms */}
+    <div className="flex flex-col sm:flex-row sm:items-center w-full sm:w-[80%] ml-auto gap-2 sm:gap-x-4">
+      <div className="flex items-center">
+        {isEditingLabel === "paymentTerms" ? (
+          <div className="flex items-center w-full sm:w-32">
+            <input
+              type="text"
+              value={tempLabelValue}
+              onChange={(e) => setTempLabelValue(e.target.value)}
+              className={`border rounded px-2 py-1 w-full mr-2 ${
+                darkMode
+                  ? "bg-gray-700 border-gray-600 text-white"
+                  : "bg-white border-gray-300 text-gray-900"
+              }`}
+            />
+            <button
+              onClick={saveLabel}
+              className={`text-xs mr-1 ${
+                darkMode ? "text-green-400" : "text-green-600"
+              }`}
+            >
+              ✓
+            </button>
+            <button
+              onClick={cancelEditingLabel}
+              className={`text-xs ${
+                darkMode ? "text-red-400" : "text-red-500"
+              }`}
+            >
+              ×
+            </button>
+          </div>
+        ) : (
+          <label
+            className={`w-full sm:w-32 text-sm font-medium ${
+              darkMode ? "text-white" : "text-gray-800"
+            } cursor-pointer`}
+            onClick={() => startEditingLabel("paymentTerms")}
+          >
+            {labels.paymentTerms || t("Payment Terms")}
+          </label>
+        )}
+      </div>
+      <input
+        placeholder={t("Payment Terms")}
+        value={paymentTerms}
+        onChange={(e) => setPaymentTerms(e.target.value)}
+        className={`w-full sm:flex-1 border rounded px-3 py-2 transition-colors duration-300 
+          ${
+            darkMode
+              ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500"
+              : "bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-blue-500"
+          }`}
+      />
+    </div>
+
+    {/* Due Date */}
+    <div className="flex flex-col sm:flex-row sm:items-center w-full sm:w-[80%] ml-auto gap-2 sm:gap-x-4">
+      <div className="flex items-center">
+        {isEditingLabel === "dueDate" ? (
+          <div className="flex items-center w-full sm:w-32">
+            <input
+              type="text"
+              value={tempLabelValue}
+              onChange={(e) => setTempLabelValue(e.target.value)}
+              className={`border rounded px-2 py-1 w-full mr-2 ${
+                darkMode
+                  ? "bg-gray-700 border-gray-600 text-white"
+                  : "bg-white border-gray-300 text-gray-900"
+              }`}
+            />
+            <button
+              onClick={saveLabel}
+              className={`text-xs mr-1 ${
+                darkMode ? "text-green-400" : "text-green-600"
+              }`}
+            >
+              ✓
+            </button>
+            <button
+              onClick={cancelEditingLabel}
+              className={`text-xs ${
+                darkMode ? "text-red-400" : "text-red-500"
+              }`}
+            >
+              ×
+            </button>
+          </div>
+        ) : (
+          <label
+            className={`w-full sm:w-32 text-sm font-medium ${
+              darkMode ? "text-white" : "text-gray-800"
+            } cursor-pointer`}
+            onClick={() => startEditingLabel("dueDate")}
+          >
+            {labels.dueDate || t("Due Date")}
+          </label>
+        )}
+      </div>
+      <div className="w-full sm:flex-1">
+        <input
+          type="date"
+          value={dueDate}
+          onChange={(e) => setDueDate(e.target.value)}
+          className={`w-full border rounded px-3 py-2 transition-colors duration-300 ${
+            darkMode
+              ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 dark-calendar-icon"
+              : "bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-blue-500"
+          }`}
+        />
+      </div>
+    </div>
+
+    {/* PO Number */}
+    <div className="flex flex-col sm:flex-row sm:items-center w-full sm:w-[80%] ml-auto gap-2 sm:gap-x-4">
+      <div className="flex items-center">
+        {isEditingLabel === "poNumber" ? (
+          <div className="flex items-center w-full sm:w-32">
+            <input
+              type="text"
+              value={tempLabelValue}
+              onChange={(e) => setTempLabelValue(e.target.value)}
+              className={`border rounded px-2 py-1 w-full mr-2 ${
+                darkMode
+                  ? "bg-gray-700 border-gray-600 text-white"
+                  : "bg-white border-gray-300 text-gray-900"
+              }`}
+            />
+            <button
+              onClick={saveLabel}
+              className={`text-xs mr-1 ${
+                darkMode ? "text-green-400" : "text-green-600"
+              }`}
+            >
+              ✓
+            </button>
+            <button
+              onClick={cancelEditingLabel}
+              className={`text-xs ${
+                darkMode ? "text-red-400" : "text-red-500"
+              }`}
+            >
+              ×
+            </button>
+          </div>
+        ) : (
+          <label
+            className={`w-full sm:w-32 text-sm font-medium ${
+              darkMode ? "text-white" : "text-gray-800"
+            } cursor-pointer`}
+            onClick={() => startEditingLabel("poNumber")}
+          >
+            {labels.poNumber || t("PO Number")}
+          </label>
+        )}
+      </div>
+      <input
+        placeholder={t("PO Number")}
+        value={poNumber}
+        onChange={(e) => setPoNumber(e.target.value)}
+        className={`w-full sm:flex-1 border rounded px-3 py-2 transition-colors duration-300 
+          ${
+            darkMode
+              ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500"
+              : "bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-blue-500"
+          }`}
+      />
+    </div>
+  </div>
+</div>
+
+{/* Right section */}
+<div className="lg:w-48 mt-10 lg:mt-0 space-y-4 pt-20">
+  <button
+    onClick={handleDownloadClick}
+    disabled={isDownloading}
+    className={`mt-6 w-full py-2 rounded flex justify-center items-center transition-colors duration-300 ${
+      darkMode
+        ? isDownloading
+          ? "bg-emerald-800 text-white cursor-not-allowed"
+          : "bg-emerald-700 hover:bg-emerald-600 text-white"
+        : isDownloading
+          ? "bg-emerald-500 text-white cursor-not-allowed"
+          : "bg-emerald-600 hover:bg-emerald-700 text-white"
+    }`}
+  >
+    {isDownloading ? (
+      <>
+        <svg
+          className="animate-spin h-5 w-5 mr-2 text-white"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <circle
+            className="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            strokeWidth="4"
+          />
+          <path
+            className="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"
+          />
+        </svg>
+        {t("Preparing PDF...")}
+      </>
+    ) : (
+      t("Download Invoice")
+    )}
+  </button>
+
+  <div>
+    <label
+      className={`block text-sm mb-1 ${
+        darkMode ? "text-gray-300" : "text-gray-600"
+      }`}
+    >
+      {t("Currency")}
+    </label>
+    <select
+      className={`w-full border rounded px-2 py-1 transition-colors duration-300 ${
+        darkMode
+          ? "bg-gray-700 border-gray-600 text-white"
+          : "bg-white border-gray-300 text-gray-900"
+      }`}
+      value={icurrency}
+      onChange={(e) => setiCurrency(e.target.value)}
+    >
+     <option value="USD">{t("USD ($)")}</option>
+  <option value="EUR">{t("EUR (€)")}</option>
+  <option value="GBP">{t("GBP (£)")}</option>
+  <option value="JPY">{t("JPY (¥)")}</option>
+  <option value="CNY">{t("CNY (¥)")}</option>
+  <option value="AUD">{t("AUD (A$)")}</option>
+  <option value="CAD">{t("CAD (C$)")}</option>
+  <option value="CHF">{t("CHF (CHF)")}</option>
+  <option value="INR">{t("INR (₹)")}</option>
+  <option value="PKR">{t("PKR (₨)")}</option>
+  <option value="ZAR">{t("ZAR (R)")}</option>
+  <option value="SEK">{t("SEK (kr)")}</option>
+  <option value="NOK">{t("NOK (kr)")}</option>
+  <option value="DKK">{t("DKK (kr)")}</option>
+  <option value="RUB">{t("RUB (₽)")}</option>
+  <option value="SGD">{t("SGD (S$)")}</option>
+  <option value="HKD">{t("HKD (HK$)")}</option>
+  <option value="NZD">{t("NZD (NZ$)")}</option>
+  <option value="THB">{t("THB (฿)")}</option>
+  <option value="MYR">{t("MYR (RM)")}</option>
+  <option value="SAR">{t("SAR (﷼)")}</option>
+
+      </select>
+  </div>
+
+  <p
+    onClick={handleSaveDefault}
+    className={`text-sm cursor-pointer hover:underline ${
+      darkMode ? "text-green-400" : "text-green-600"
+    }`}
+  >
+    {t("Save Default")}
+  </p>
+</div>
+
       </div>
 
       {/* Item Table */}
       <div className="max-w-7xl mx-auto mt-8">
-        <div
-          className={`grid grid-cols-5 text-sm font-semibold rounded-t overflow-hidden transition-colors duration-300 ${
-            darkMode ? "bg-gray-800 text-gray-100" : "bg-[#101C4E] text-white"
-          }`}
-        >
-          <div className="col-span-2 px-3 py-2">
-            {isEditingLabel === "item" ? (
-              <div className="flex items-center">
-                <input
-                  type="text"
-                  value={tempLabelValue}
-                  onChange={(e) => setTempLabelValue(e.target.value)}
-                  className={`border rounded px-2 py-1 w-full mr-2 ${
-                    darkMode
-                      ? "bg-gray-700 border-gray-600 text-white"
-                      : "bg-white border-gray-300 text-gray-900"
-                  }`}
-                />
-                <button
-                  onClick={saveLabel}
-                  className={`text-xs mr-1 ${
-                    darkMode ? "text-green-400" : "text-green-600"
-                  }`}
-                >
-                  ✓
-                </button>
-                <button
-                  onClick={cancelEditingLabel}
-                  className={`text-xs ${
-                    darkMode ? "text-red-400" : "text-red-500"
-                  }`}
-                >
-                  ×
-                </button>
-              </div>
-            ) : (
-              <span
-                onClick={() => startEditingLabel("item")}
-                className="cursor-pointer"
-              >
-                {labels.item}
-              </span>
-            )}
-          </div>
-          <div className="px-3 py-2 text-center">
-            {isEditingLabel === "quantity" ? (
-              <div className="flex items-center justify-center">
-                <input
-                  type="text"
-                  value={tempLabelValue}
-                  onChange={(e) => setTempLabelValue(e.target.value)}
-                  className={`border rounded px-2 py-1 w-full mr-2 ${
-                    darkMode
-                      ? "bg-gray-700 border-gray-600 text-white"
-                      : "bg-white border-gray-300 text-gray-900"
-                  }`}
-                />
-                <button
-                  onClick={saveLabel}
-                  className={`text-xs mr-1 ${
-                    darkMode ? "text-green-400" : "text-green-600"
-                  }`}
-                >
-                  ✓
-                </button>
-                <button
-                  onClick={cancelEditingLabel}
-                  className={`text-xs ${
-                    darkMode ? "text-red-400" : "text-red-500"
-                  }`}
-                >
-                  ×
-                </button>
-              </div>
-            ) : (
-              <span
-                onClick={() => startEditingLabel("quantity")}
-                className="cursor-pointer"
-              >
-                {labels.quantity}
-              </span>
-            )}
-          </div>
-          <div className="px-3 py-2 text-center">
-            {isEditingLabel === "rate" ? (
-              <div className="flex items-center justify-center">
-                <input
-                  type="text"
-                  value={tempLabelValue}
-                  onChange={(e) => setTempLabelValue(e.target.value)}
-                  className={`border rounded px-2 py-1 w-full mr-2 ${
-                    darkMode
-                      ? "bg-gray-700 border-gray-600 text-white"
-                      : "bg-white border-gray-300 text-gray-900"
-                  }`}
-                />
-                <button
-                  onClick={saveLabel}
-                  className={`text-xs mr-1 ${
-                    darkMode ? "text-green-400" : "text-green-600"
-                  }`}
-                >
-                  ✓
-                </button>
-                <button
-                  onClick={cancelEditingLabel}
-                  className={`text-xs ${
-                    darkMode ? "text-red-400" : "text-red-500"
-                  }`}
-                >
-                  ×
-                </button>
-              </div>
-            ) : (
-              <span
-                onClick={() => startEditingLabel("rate")}
-                className="cursor-pointer"
-              >
-                {labels.rate}
-              </span>
-            )}
-          </div>
-          <div className="px-3 py-2 text-center">
-            {isEditingLabel === "amount" ? (
-              <div className="flex items-center justify-center">
-                <input
-                  type="text"
-                  value={tempLabelValue}
-                  onChange={(e) => setTempLabelValue(e.target.value)}
-                  className={`border rounded px-2 py-1 w-full mr-2 ${
-                    darkMode
-                      ? "bg-gray-700 border-gray-600 text-white"
-                      : "bg-white border-gray-300 text-gray-900"
-                  }`}
-                />
-                <button
-                  onClick={saveLabel}
-                  className={`text-xs mr-1 ${
-                    darkMode ? "text-green-400" : "text-green-600"
-                  }`}
-                >
-                  ✓
-                </button>
-                <button
-                  onClick={cancelEditingLabel}
-                  className={`text-xs ${
-                    darkMode ? "text-red-400" : "text-red-500"
-                  }`}
-                >
-                  ×
-                </button>
-              </div>
-            ) : (
-              <span
-                onClick={() => startEditingLabel("amount")}
-                className="cursor-pointer"
-              >
-                {labels.amount}
-              </span>
-            )}
-          </div>
-        </div>
-        <div>
-          {items.map((item) => (
-            <div
-              key={item.id}
-              className={`group grid grid-cols-5 items-center relative transition-colors duration-300 ${
-                darkMode
-                  ? "border-b border-gray-700"
-                  : "border-b border-gray-200"
-              }`}
-            >
-              <input
-                className={`col-span-2 px-3 py-2 border-r ${
-                  darkMode
-                    ? "bg-gray-800 border-gray-700 text-white placeholder-gray-400"
-                    : "bg-white border-gray-200 text-gray-900 placeholder-gray-500"
-                }`}
-                placeholder="Description of item/service..."
-                value={item.description}
-                onChange={(e) =>
-                  handleDescriptionChange(item.id, e.target.value)
-                }
-              />
-              <input
-                type="number"
-                className={`px-3 py-2 text-center border-r ${
-                  darkMode
-                    ? "bg-gray-800 border-gray-700 text-white"
-                    : "bg-white border-gray-200 text-gray-900"
-                }`}
-                value={item.quantity}
-                onChange={(e) => handleQuantityChange(item.id, e.target.value)}
-                min="0"
-                step="1"
-              />
-              <div
-                className={`flex items-center px-2 py-2 border-r ${
-                  darkMode
-                    ? "bg-gray-800 border-gray-700"
-                    : "bg-white border-gray-200"
-                }`}
-              >
-                <span className="mr-1">{getCurrencySymbol()}</span>
-                <input
-                  className={`w-full outline-none text-right ${
-                    darkMode
-                      ? "bg-gray-800 text-white"
-                      : "bg-white text-gray-900"
-                  }`}
-                  type="number"
-                  value={item.price}
-                  onChange={(e) => handlePriceChange(item.id, e.target.value)}
-                  min="0"
-                  step="0.01"
-                />
-              </div>
-              <div
-                className={`text-right px-3 py-2 ${
-                  darkMode ? "text-gray-100" : "text-gray-800"
-                }`}
-              >
-                {getCurrencySymbol()}
-                {(Number(item.amount) || 0).toFixed(2)}
-              </div>
-
-              {/* X button (shown on hover) */}
-              <button
-                onClick={() => removeItem(item.id)}
-                className={`absolute right-[-1.5rem] font-bold opacity-0 group-hover:opacity-100 transition ${
-                  darkMode ? "text-red-400" : "text-red-500"
-                }`}
-              >
-                ×
-              </button>
-            </div>
-          ))}
-
-          <button
-            onClick={addItem}
-            className={`mt-2 px-4 py-1 border rounded hover:bg-green-50 transition-colors duration-300 ${
+         <div
+    className={`grid grid-cols-5 text-sm font-semibold rounded-t overflow-hidden transition-colors duration-300 ${
+      darkMode ? "bg-gray-800 text-gray-100" : "bg-[#101C4E] text-white"
+    }`}
+  >
+    {/* Item Label */}
+    <div className="col-span-2 px-3 py-2">
+      {isEditingLabel === "item" ? (
+        <div className="flex items-center">
+          <input
+            type="text"
+            value={tempLabelValue}
+            onChange={(e) => setTempLabelValue(e.target.value)}
+            className={`border rounded px-2 py-1 w-full mr-2 ${
               darkMode
-                ? "border-green-500 text-green-400 hover:bg-gray-800"
-                : "border-green-600 text-green-600 hover:bg-green-50"
+                ? "bg-gray-700 border-gray-600 text-white"
+                : "bg-white border-gray-300 text-gray-900"
+            }`}
+          />
+          <button
+            onClick={saveLabel}
+            className={`text-xs mr-1 ${
+              darkMode ? "text-green-400" : "text-green-600"
             }`}
           >
-            + Line Item
+            ✓
+          </button>
+          <button
+            onClick={cancelEditingLabel}
+            className={`text-xs ${
+              darkMode ? "text-red-400" : "text-red-500"
+            }`}
+          >
+            ×
           </button>
         </div>
+      ) : (
+        <span
+          onClick={() => startEditingLabel("item")}
+          className="cursor-pointer"
+        >
+          {t(labels.item)}
+        </span>
+      )}
+    </div>
+
+    {/* Quantity */}
+    <div className="px-3 py-2 text-center">
+      {isEditingLabel === "quantity" ? (
+        <div className="flex items-center justify-center">
+          <input
+            type="text"
+            value={tempLabelValue}
+            onChange={(e) => setTempLabelValue(e.target.value)}
+            className={`border rounded px-2 py-1 w-full mr-2 ${
+              darkMode
+                ? "bg-gray-700 border-gray-600 text-white"
+                : "bg-white border-gray-300 text-gray-900"
+            }`}
+          />
+          <button
+            onClick={saveLabel}
+            className={`text-xs mr-1 ${
+              darkMode ? "text-green-400" : "text-green-600"
+            }`}
+          >
+            ✓
+          </button>
+          <button
+            onClick={cancelEditingLabel}
+            className={`text-xs ${
+              darkMode ? "text-red-400" : "text-red-500"
+            }`}
+          >
+            ×
+          </button>
+        </div>
+      ) : (
+        <span
+          onClick={() => startEditingLabel("quantity")}
+          className="cursor-pointer"
+        >
+          {t(labels.quantity)}
+        </span>
+      )}
+    </div>
+
+    {/* Rate */}
+    <div className="px-3 py-2 text-center">
+      {isEditingLabel === "rate" ? (
+        <div className="flex items-center justify-center">
+          <input
+            type="text"
+            value={tempLabelValue}
+            onChange={(e) => setTempLabelValue(e.target.value)}
+            className={`border rounded px-2 py-1 w-full mr-2 ${
+              darkMode
+                ? "bg-gray-700 border-gray-600 text-white"
+                : "bg-white border-gray-300 text-gray-900"
+            }`}
+          />
+          <button
+            onClick={saveLabel}
+            className={`text-xs mr-1 ${
+              darkMode ? "text-green-400" : "text-green-600"
+            }`}
+          >
+            ✓
+          </button>
+          <button
+            onClick={cancelEditingLabel}
+            className={`text-xs ${
+              darkMode ? "text-red-400" : "text-red-500"
+            }`}
+          >
+            ×
+          </button>
+        </div>
+      ) : (
+        <span
+          onClick={() => startEditingLabel("rate")}
+          className="cursor-pointer"
+        >
+          {t(labels.rate)}
+        </span>
+      )}
+    </div>
+
+    {/* Amount */}
+    <div className="px-3 py-2 text-center">
+      {isEditingLabel === "amount" ? (
+        <div className="flex items-center justify-center">
+          <input
+            type="text"
+            value={tempLabelValue}
+            onChange={(e) => setTempLabelValue(e.target.value)}
+            className={`border rounded px-2 py-1 w-full mr-2 ${
+              darkMode
+                ? "bg-gray-700 border-gray-600 text-white"
+                : "bg-white border-gray-300 text-gray-900"
+            }`}
+          />
+          <button
+            onClick={saveLabel}
+            className={`text-xs mr-1 ${
+              darkMode ? "text-green-400" : "text-green-600"
+            }`}
+          >
+            ✓
+          </button>
+          <button
+            onClick={cancelEditingLabel}
+            className={`text-xs ${
+              darkMode ? "text-red-400" : "text-red-500"
+            }`}
+          >
+            ×
+          </button>
+        </div>
+      ) : (
+        <span
+          onClick={() => startEditingLabel("amount")}
+          className="cursor-pointer"
+        >
+          {t(labels.amount)}
+        </span>
+      )}
+    </div>
+  </div>
+         <div>
+    {items.map((item) => (
+      <div
+        key={item.id}
+        className={`group grid grid-cols-5 items-center relative transition-colors duration-300 ${
+          darkMode
+            ? "border-b border-gray-700"
+            : "border-b border-gray-200"
+        }`}
+      >
+        <input
+          className={`col-span-2 px-3 py-2 border-r ${
+            darkMode
+              ? "bg-gray-800 border-gray-700 text-white placeholder-gray-400"
+              : "bg-white border-gray-200 text-gray-900 placeholder-gray-500"
+          }`}
+          placeholder={t("Description of item/service...")}
+          value={item.description}
+          onChange={(e) =>
+            handleDescriptionChange(item.id, e.target.value)
+          }
+        />
+        <input
+          type="number"
+          className={`px-3 py-2 text-center border-r ${
+            darkMode
+              ? "bg-gray-800 border-gray-700 text-white"
+              : "bg-white border-gray-200 text-gray-900"
+          }`}
+          value={item.quantity}
+          onChange={(e) =>
+            handleQuantityChange(item.id, e.target.value)
+          }
+          min="0"
+          step="1"
+        />
+        <div
+          className={`flex items-center px-2 py-2 border-r ${
+            darkMode
+              ? "bg-gray-800 border-gray-700"
+              : "bg-white border-gray-200"
+          }`}
+        >
+          <span className="mr-1">{getCurrencySymbol()}</span>
+          <input
+            className={`w-full outline-none text-right ${
+              darkMode ? "bg-gray-800 text-white" : "bg-white text-gray-900"
+            }`}
+            type="number"
+            value={item.price}
+            onChange={(e) =>
+              handlePriceChange(item.id, e.target.value)
+            }
+            min="0"
+            step="0.01"
+          />
+        </div>
+        <div
+          className={`text-right px-3 py-2 ${
+            darkMode ? "text-gray-100" : "text-gray-800"
+          }`}
+        >
+          {getCurrencySymbol()}
+          {(Number(item.amount) || 0).toFixed(2)}
+        </div>
+
+        {/* X button (shown on hover) */}
+        <button
+          onClick={() => removeItem(item.id)}
+          className={`absolute right-[-1.5rem] font-bold opacity-0 group-hover:opacity-100 transition ${
+            darkMode ? "text-red-400" : "text-red-500"
+          }`}
+        >
+          ×
+        </button>
+      </div>
+    ))}
+
+    {/* Add Line Item Button */}
+    <button
+      onClick={addItem}
+      className={`mt-2 px-4 py-1 border rounded hover:bg-green-50 transition-colors duration-300 ${
+        darkMode
+          ? "border-green-500 text-green-400 hover:bg-gray-800"
+          : "border-green-600 text-green-600 hover:bg-green-50"
+      }`}
+    >
+      + {t("Line Item")}
+    </button>
+  </div>
 
         {/* Remaining Section After Line Item */}
         <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Notes and Terms */}
-          <div className="space-y-4">
-            <div>
-              <div className="flex items-center">
-                {isEditingLabel === "notes" ? (
-                  <div className="flex items-center">
-                    <input
-                      type="text"
-                      value={tempLabelValue}
-                      onChange={(e) => setTempLabelValue(e.target.value)}
-                      className={`border rounded px-2 py-1 w-32 mr-2 ${
-                        darkMode
-                          ? "bg-gray-700 border-gray-600 text-white"
-                          : "bg-white border-gray-300 text-gray-900"
-                      }`}
-                    />
-                    <button
-                      onClick={saveLabel}
-                      className={`text-xs mr-1 ${
-                        darkMode ? "text-green-400" : "text-green-600"
-                      }`}
-                    >
-                      ✓
-                    </button>
-                    <button
-                      onClick={cancelEditingLabel}
-                      className={`text-xs ${
-                        darkMode ? "text-red-400" : "text-red-500"
-                      }`}
-                    >
-                      ×
-                    </button>
-                  </div>
-                ) : (
-                  <label
-                    className={`block text-sm font-medium mb-1 ${
-                      darkMode ? "text-gray-300" : "text-gray-700"
-                    } cursor-pointer`}
-                    onClick={() => startEditingLabel("notes")}
-                  >
-                    {labels.notes}
-                  </label>
-                )}
-              </div>
-              <textarea
-                placeholder="Notes – any relevant information not already covered"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                className={`w-full border rounded px-3 py-2 transition-colors duration-300 ${
-                  darkMode
-                    ? "bg-gray-800 border-gray-700 text-white placeholder-gray-400"
-                    : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
-                }`}
-                rows={3}
-              ></textarea>
-            </div>
-            <div>
-              <div className="flex items-center">
-                {isEditingLabel === "terms" ? (
-                  <div className="flex items-center">
-                    <input
-                      type="text"
-                      value={tempLabelValue}
-                      onChange={(e) => setTempLabelValue(e.target.value)}
-                      className={`border rounded px-2 py-1 w-32 mr-2 ${
-                        darkMode
-                          ? "bg-gray-700 border-gray-600 text-white"
-                          : "bg-white border-gray-300 text-gray-900"
-                      }`}
-                    />
-                    <button
-                      onClick={saveLabel}
-                      className={`text-xs mr-1 ${
-                        darkMode ? "text-green-400" : "text-green-600"
-                      }`}
-                    >
-                      ✓
-                    </button>
-                    <button
-                      onClick={cancelEditingLabel}
-                      className={`text-xs ${
-                        darkMode ? "text-red-400" : "text-red-500"
-                      }`}
-                    >
-                      ×
-                    </button>
-                  </div>
-                ) : (
-                  <label
-                    className={`block text-sm font-medium mb-1 ${
-                      darkMode ? "text-gray-300" : "text-gray-700"
-                    } cursor-pointer`}
-                    onClick={() => startEditingLabel("terms")}
-                  >
-                    {labels.terms}
-                  </label>
-                )}
-              </div>
-              <textarea
-                placeholder="Terms and conditions – late fees, payment methods, delivery schedule"
-                value={terms} // ✅ bind value
-                onChange={(e) => setTerms(e.target.value)} // ✅ update state
-                className={`w-full border rounded px-3 py-2 transition-colors duration-300 ${
-                  darkMode
-                    ? "bg-gray-800 border-gray-700 text-white placeholder-gray-400"
-                    : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
-                }`}
-                rows={3}
-              />
-            </div>
-          </div>
+       <div className="space-y-4">
+  {/* Notes Section */}
+  <div>
+    <div className="flex items-center">
+      {isEditingLabel === "notes" ? (
+        <div className="flex items-center">
+          <input
+            type="text"
+            value={tempLabelValue}
+            onChange={(e) => setTempLabelValue(e.target.value)}
+            className={`border rounded px-2 py-1 w-32 mr-2 ${
+              darkMode
+                ? "bg-gray-700 border-gray-600 text-white"
+                : "bg-white border-gray-300 text-gray-900"
+            }`}
+          />
+          <button
+            onClick={saveLabel}
+            className={`text-xs mr-1 ${
+              darkMode ? "text-green-400" : "text-green-600"
+            }`}
+          >
+            ✓
+          </button>
+          <button
+            onClick={cancelEditingLabel}
+            className={`text-xs ${
+              darkMode ? "text-red-400" : "text-red-500"
+            }`}
+          >
+            ×
+          </button>
+        </div>
+      ) : (
+        <label
+          className={`block text-sm font-medium mb-1 ${
+            darkMode ? "text-gray-300" : "text-gray-700"
+          } cursor-pointer`}
+          onClick={() => startEditingLabel("notes")}
+        >
+          {t(labels.notes)}
+        </label>
+      )}
+    </div>
+    <textarea
+      placeholder={t("Notes – any relevant information not already covered")}
+      value={notes}
+      onChange={(e) => setNotes(e.target.value)}
+      className={`w-full border rounded px-3 py-2 transition-colors duration-300 ${
+        darkMode
+          ? "bg-gray-800 border-gray-700 text-white placeholder-gray-400"
+          : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
+      }`}
+      rows={3}
+    ></textarea>
+  </div>
+
+  {/* Terms Section */}
+  <div>
+    <div className="flex items-center">
+      {isEditingLabel === "terms" ? (
+        <div className="flex items-center">
+          <input
+            type="text"
+            value={tempLabelValue}
+            onChange={(e) => setTempLabelValue(e.target.value)}
+            className={`border rounded px-2 py-1 w-32 mr-2 ${
+              darkMode
+                ? "bg-gray-700 border-gray-600 text-white"
+                : "bg-white border-gray-300 text-gray-900"
+            }`}
+          />
+          <button
+            onClick={saveLabel}
+            className={`text-xs mr-1 ${
+              darkMode ? "text-green-400" : "text-green-600"
+            }`}
+          >
+            ✓
+          </button>
+          <button
+            onClick={cancelEditingLabel}
+            className={`text-xs ${
+              darkMode ? "text-red-400" : "text-red-500"
+            }`}
+          >
+            ×
+          </button>
+        </div>
+      ) : (
+        <label
+          className={`block text-sm font-medium mb-1 ${
+            darkMode ? "text-gray-300" : "text-gray-700"
+          } cursor-pointer`}
+          onClick={() => startEditingLabel("terms")}
+        >
+          {t(labels.terms)}
+        </label>
+      )}
+    </div>
+    <textarea
+      placeholder={t("Terms and conditions – late fees, payment methods, delivery schedule")}
+      value={terms}
+      onChange={(e) => setTerms(e.target.value)}
+      className={`w-full border rounded px-3 py-2 transition-colors duration-300 ${
+        darkMode
+          ? "bg-gray-800 border-gray-700 text-white placeholder-gray-400"
+          : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
+      }`}
+      rows={3}
+    />
+  </div>
+</div>
+
 
           {/* Summary */}
           <div
@@ -1749,339 +1825,326 @@ export default function HomePage() {
               darkMode ? "bg-gray-800" : "bg-gray-50"
             }`}
           >
-            <div className="flex justify-between">
-              <div className="flex items-center">
-                {isEditingLabel === "subtotal" ? (
-                  <div className="flex items-center">
-                    <input
-                      type="text"
-                      value={tempLabelValue}
-                      onChange={(e) => setTempLabelValue(e.target.value)}
-                      className={`border rounded px-2 py-1 w-32 mr-2 ${
-                        darkMode
-                          ? "bg-gray-700 border-gray-600 text-white"
-                          : "bg-white border-gray-300 text-gray-900"
-                      }`}
-                    />
-                    <button
-                      onClick={saveLabel}
-                      className={`text-xs mr-1 ${
-                        darkMode ? "text-green-400" : "text-green-600"
-                      }`}
-                    >
-                      ✓
-                    </button>
-                    <button
-                      onClick={cancelEditingLabel}
-                      className={`text-xs ${
-                        darkMode ? "text-red-400" : "text-red-500"
-                      }`}
-                    >
-                      ×
-                    </button>
-                  </div>
-                ) : (
-                  <span
-                    className={
-                      darkMode
-                        ? "text-gray-300 cursor-pointer"
-                        : "text-gray-700 cursor-pointer"
-                    }
-                    onClick={() => startEditingLabel("subtotal")}
-                  >
-                    {labels.subtotal}
-                  </span>
-                )}
-              </div>
-              <span className={darkMode ? "text-gray-100" : "text-gray-900"}>
-                {getCurrencySymbol()}
-                {calculateSubtotal().toFixed(2)}
-              </span>
-            </div>
+          <div className="flex justify-between">
+  <div className="flex items-center">
+    {isEditingLabel === "subtotal" ? (
+      <div className="flex items-center">
+        <input
+          type="text"
+          value={tempLabelValue}
+          onChange={(e) => setTempLabelValue(e.target.value)}
+          className={`border rounded px-2 py-1 w-32 mr-2 ${
+            darkMode
+              ? "bg-gray-700 border-gray-600 text-white"
+              : "bg-white border-gray-300 text-gray-900"
+          }`}
+        />
+        <button
+          onClick={saveLabel}
+          className={`text-xs mr-1 ${
+            darkMode ? "text-green-400" : "text-green-600"
+          }`}
+        >
+          ✓
+        </button>
+        <button
+          onClick={cancelEditingLabel}
+          className={`text-xs ${
+            darkMode ? "text-red-400" : "text-red-500"
+          }`}
+        >
+          ×
+        </button>
+      </div>
+    ) : (
+      <span
+        className={`cursor-pointer ${
+          darkMode ? "text-gray-300" : "text-gray-700"
+        }`}
+        onClick={() => startEditingLabel("subtotal")}
+      >
+        {t(labels.subtotal)}
+      </span>
+    )}
+  </div>
+  <span className={darkMode ? "text-gray-100" : "text-gray-900"}>
+    {getCurrencySymbol()}
+    {calculateSubtotal().toFixed(2)}
+  </span>
+</div>
+
 
             {/* Tax Section */}
-            <div className="flex justify-between items-center">
-              <div className="flex items-center">
-                {isEditingLabel === "tax" ? (
-                  <div className="flex items-center">
-                    <input
-                      type="text"
-                      value={tempLabelValue}
-                      onChange={(e) => setTempLabelValue(e.target.value)}
-                      className={`border rounded px-2 py-1 w-32 mr-2 ${
-                        darkMode
-                          ? "bg-gray-700 border-gray-600 text-white"
-                          : "bg-white border-gray-300 text-gray-900"
-                      }`}
-                    />
-                    <button
-                      onClick={saveLabel}
-                      className={`text-xs mr-1 ${
-                        darkMode ? "text-green-400" : "text-green-600"
-                      }`}
-                    >
-                      ✓
-                    </button>
-                    <button
-                      onClick={cancelEditingLabel}
-                      className={`text-xs ${
-                        darkMode ? "text-red-400" : "text-red-500"
-                      }`}
-                    >
-                      ×
-                    </button>
-                  </div>
-                ) : (
-                  <span
-                    className={
-                      darkMode
-                        ? "text-green-400 cursor-pointer"
-                        : "text-green-600 cursor-pointer"
-                    }
-                    onClick={() => startEditingLabel("tax")}
-                  >
-                    {labels.tax}
-                  </span>
-                )}
-                {!showTaxInput && (
-                  <button
-                    onClick={() => setShowTaxInput(true)}
-                    className={`ml-2 ${
-                      darkMode
-                        ? "text-green-400 hover:text-green-300"
-                        : "text-green-600 hover:text-green-800"
-                    }`}
-                  >
-                    +
-                  </button>
-                )}
-              </div>
-              {showTaxInput ? (
-                <div className="flex items-center group">
-                  {isTaxPercentage ? (
-                    <>
-                      <input
-                        type="number"
-                        value={taxRate}
-                        onChange={(e) =>
-                          setTaxRate(parseFloat(e.target.value) || 0)
-                        }
-                        className={`border rounded px-2 py-1 w-20 mr-2 text-right transition-colors duration-300 ${
-                          darkMode
-                            ? "bg-gray-700 border-gray-600 text-white"
-                            : "bg-white border-gray-300 text-gray-900"
-                        }`}
-                        min="0"
-                        max="100"
-                        step="0.1"
-                      />
-                      <span
-                        className={darkMode ? "text-gray-300" : "text-gray-700"}
-                      >
-                        %
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <span
-                        className={`mr-1 ${
-                          darkMode ? "text-gray-300" : "text-gray-700"
-                        }`}
-                      >
-                        {getCurrencySymbol()}
-                      </span>
-                      <input
-                        type="number"
-                        value={taxAmount}
-                        onChange={(e) =>
-                          setTaxAmount(parseFloat(e.target.value) || 0)
-                        }
-                        className={`border rounded px-2 py-1 w-20 text-right transition-colors duration-300 ${
-                          darkMode
-                            ? "bg-gray-700 border-gray-600 text-white"
-                            : "bg-white border-gray-300 text-gray-900"
-                        }`}
-                        min="0"
-                        step="0.01"
-                      />
-                    </>
-                  )}
-                  <button
-                    onClick={() => setIsTaxPercentage(!isTaxPercentage)}
-                    className={`ml-2 ${
-                      darkMode
-                        ? "text-blue-400 hover:text-blue-300"
-                        : "text-blue-600 hover:text-blue-800"
-                    }`}
-                    title="Toggle between percentage and amount"
-                  >
-                    ⇄
-                  </button>
-                  <button
-                    onClick={() => {
-                      setShowTaxInput(false);
-                      setTaxRate(0);
-                      setTaxAmount(0);
-                    }}
-                    className={`ml-2 opacity-0 group-hover:opacity-100 ${
-                      darkMode ? "text-red-400" : "text-red-500"
-                    }`}
-                  >
-                    ×
-                  </button>
-                </div>
-              ) : (
-                <span
-                  className={darkMode ? "text-green-400" : "text-green-600"}
-                >
-                  {getCurrencySymbol()}
-                  {calculateTaxAmount().toFixed(2)}
-                </span>
-              )}
-            </div>
+           <div className="flex justify-between items-center">
+  <div className="flex items-center">
+    {isEditingLabel === "tax" ? (
+      <div className="flex items-center">
+        <input
+          type="text"
+          value={tempLabelValue}
+          onChange={(e) => setTempLabelValue(e.target.value)}
+          className={`border rounded px-2 py-1 w-32 mr-2 ${
+            darkMode
+              ? "bg-gray-700 border-gray-600 text-white"
+              : "bg-white border-gray-300 text-gray-900"
+          }`}
+        />
+        <button
+          onClick={saveLabel}
+          className={`text-xs mr-1 ${
+            darkMode ? "text-green-400" : "text-green-600"
+          }`}
+        >
+          ✓
+        </button>
+        <button
+          onClick={cancelEditingLabel}
+          className={`text-xs ${
+            darkMode ? "text-red-400" : "text-red-500"
+          }`}
+        >
+          ×
+        </button>
+      </div>
+    ) : (
+      <span
+        className={`cursor-pointer ${
+          darkMode ? "text-green-400" : "text-green-600"
+        }`}
+        onClick={() => startEditingLabel("tax")}
+      >
+        {t(labels.tax)}
+      </span>
+    )}
+    {!showTaxInput && (
+      <button
+        onClick={() => setShowTaxInput(true)}
+        className={`ml-2 ${
+          darkMode
+            ? "text-green-400 hover:text-green-300"
+            : "text-green-600 hover:text-green-800"
+        }`}
+      >
+        +
+      </button>
+    )}
+  </div>
+
+  {showTaxInput ? (
+    <div className="flex items-center group">
+      {isTaxPercentage ? (
+        <>
+          <input
+            type="number"
+            value={taxRate}
+            onChange={(e) => setTaxRate(parseFloat(e.target.value) || 0)}
+            className={`border rounded px-2 py-1 w-20 mr-2 text-right transition-colors duration-300 ${
+              darkMode
+                ? "bg-gray-700 border-gray-600 text-white"
+                : "bg-white border-gray-300 text-gray-900"
+            }`}
+            min="0"
+            max="100"
+            step="0.1"
+          />
+          <span className={darkMode ? "text-gray-300" : "text-gray-700"}>
+            %
+          </span>
+        </>
+      ) : (
+        <>
+          <span
+            className={`mr-1 ${
+              darkMode ? "text-gray-300" : "text-gray-700"
+            }`}
+          >
+            {getCurrencySymbol()}
+          </span>
+          <input
+            type="number"
+            value={taxAmount}
+            onChange={(e) => setTaxAmount(parseFloat(e.target.value) || 0)}
+            className={`border rounded px-2 py-1 w-20 text-right transition-colors duration-300 ${
+              darkMode
+                ? "bg-gray-700 border-gray-600 text-white"
+                : "bg-white border-gray-300 text-gray-900"
+            }`}
+            min="0"
+            step="0.01"
+          />
+        </>
+      )}
+      <button
+        onClick={() => setIsTaxPercentage(!isTaxPercentage)}
+        className={`ml-2 ${
+          darkMode
+            ? "text-blue-400 hover:text-blue-300"
+            : "text-blue-600 hover:text-blue-800"
+        }`}
+        title="Toggle between percentage and amount"
+      >
+        ⇄
+      </button>
+      <button
+        onClick={() => {
+          setShowTaxInput(false);
+          setTaxRate(0);
+          setTaxAmount(0);
+        }}
+        className={`ml-2 opacity-0 group-hover:opacity-100 ${
+          darkMode ? "text-red-400" : "text-red-500"
+        }`}
+      >
+        ×
+      </button>
+    </div>
+  ) : (
+    <span className={darkMode ? "text-green-400" : "text-green-600"}>
+      {getCurrencySymbol()}
+      {calculateTaxAmount().toFixed(2)}
+    </span>
+  )}
+</div>
+
 
             {/* Discount Section */}
-            <div className="flex justify-between items-center">
-              <div className="flex items-center">
-                {isEditingLabel === "discount" ? (
-                  <div className="flex items-center">
-                    <input
-                      type="text"
-                      value={tempLabelValue}
-                      onChange={(e) => setTempLabelValue(e.target.value)}
-                      className={`border rounded px-2 py-1 w-32 mr-2 ${
-                        darkMode
-                          ? "bg-gray-700 border-gray-600 text-white"
-                          : "bg-white border-gray-300 text-gray-900"
-                      }`}
-                    />
-                    <button
-                      onClick={saveLabel}
-                      className={`text-xs mr-1 ${
-                        darkMode ? "text-green-400" : "text-green-600"
-                      }`}
-                    >
-                      ✓
-                    </button>
-                    <button
-                      onClick={cancelEditingLabel}
-                      className={`text-xs ${
-                        darkMode ? "text-red-400" : "text-red-500"
-                      }`}
-                    >
-                      ×
-                    </button>
-                  </div>
-                ) : (
-                  <span
-                    className={
-                      darkMode
-                        ? "text-green-400 cursor-pointer"
-                        : "text-green-600 cursor-pointer"
-                    }
-                    onClick={() => startEditingLabel("discount")}
-                  >
-                    {labels.discount}
-                  </span>
-                )}
-                {!showDiscountInput && (
-                  <button
-                    onClick={() => setShowDiscountInput(true)}
-                    className={`ml-2 ${
-                      darkMode
-                        ? "text-green-400 hover:text-green-300"
-                        : "text-green-600 hover:text-green-800"
-                    }`}
-                  >
-                    +
-                  </button>
-                )}
-              </div>
-              {showDiscountInput ? (
-                <div className="flex items-center group">
-                  {isDiscountPercentage ? (
-                    <>
-                      <input
-                        type="number"
-                        value={discountPercentage}
-                        onChange={(e) =>
-                          setDiscountPercentage(parseFloat(e.target.value) || 0)
-                        }
-                        className={`border rounded px-2 py-1 w-20 mr-2 text-right transition-colors duration-300 ${
-                          darkMode
-                            ? "bg-gray-700 border-gray-600 text-white"
-                            : "bg-white border-gray-300 text-gray-900"
-                        }`}
-                        min="0"
-                        max="100"
-                        step="0.1"
-                      />
-                      <span
-                        className={darkMode ? "text-gray-300" : "text-gray-700"}
-                      >
-                        %
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <span
-                        className={`mr-1 ${
-                          darkMode ? "text-gray-300" : "text-gray-700"
-                        }`}
-                      >
-                        {getCurrencySymbol()}
-                      </span>
-                      <input
-                        type="number"
-                        value={discountFixed}
-                        onChange={(e) =>
-                          setDiscountFixed(parseFloat(e.target.value) || 0)
-                        }
-                        className={`border rounded px-2 py-1 w-20 text-right transition-colors duration-300 ${
-                          darkMode
-                            ? "bg-gray-700 border-gray-600 text-white"
-                            : "bg-white border-gray-300 text-gray-900"
-                        }`}
-                        min="0"
-                        step="0.01"
-                      />
-                    </>
-                  )}
-                  <button
-                    onClick={() =>
-                      setIsDiscountPercentage(!isDiscountPercentage)
-                    }
-                    className={`ml-2 ${
-                      darkMode
-                        ? "text-blue-400 hover:text-blue-300"
-                        : "text-blue-600 hover:text-blue-800"
-                    }`}
-                    title="Toggle between percentage and amount"
-                  >
-                    ⇄
-                  </button>
-                  <button
-                    onClick={() => {
-                      setShowDiscountInput(false);
-                      setDiscountPercentage(0);
-                      setDiscountFixed(0);
-                    }}
-                    className={`ml-2 opacity-0 group-hover:opacity-100 ${
-                      darkMode ? "text-red-400" : "text-red-500"
-                    }`}
-                  >
-                    ×
-                  </button>
-                </div>
-              ) : (
-                <span
-                  className={darkMode ? "text-green-400" : "text-green-600"}
-                >
-                  -{getCurrencySymbol()}
-                  {calculateDiscountAmount().toFixed(2)}
-                </span>
-              )}
-            </div>
+        <div className="flex justify-between items-center">
+  <div className="flex items-center">
+    {isEditingLabel === "discount" ? (
+      <div className="flex items-center">
+        <input
+          type="text"
+          value={tempLabelValue}
+          onChange={(e) => setTempLabelValue(e.target.value)}
+          className={`border rounded px-2 py-1 w-32 mr-2 ${
+            darkMode
+              ? "bg-gray-700 border-gray-600 text-white"
+              : "bg-white border-gray-300 text-gray-900"
+          }`}
+        />
+        <button
+          onClick={saveLabel}
+          className={`text-xs mr-1 ${
+            darkMode ? "text-green-400" : "text-green-600"
+          }`}
+        >
+          ✓
+        </button>
+        <button
+          onClick={cancelEditingLabel}
+          className={`text-xs ${
+            darkMode ? "text-red-400" : "text-red-500"
+          }`}
+        >
+          ×
+        </button>
+      </div>
+    ) : (
+      <span
+        className={`cursor-pointer ${
+          darkMode ? "text-green-400" : "text-green-600"
+        }`}
+        onClick={() => startEditingLabel("discount")}
+      >
+        {t(labels.discount)}
+      </span>
+    )}
+    {!showDiscountInput && (
+      <button
+        onClick={() => setShowDiscountInput(true)}
+        className={`ml-2 ${
+          darkMode
+            ? "text-green-400 hover:text-green-300"
+            : "text-green-600 hover:text-green-800"
+        }`}
+      >
+        +
+      </button>
+    )}
+  </div>
+
+  {showDiscountInput ? (
+    <div className="flex items-center group">
+      {isDiscountPercentage ? (
+        <>
+          <input
+            type="number"
+            value={discountPercentage}
+            onChange={(e) =>
+              setDiscountPercentage(parseFloat(e.target.value) || 0)
+            }
+            className={`border rounded px-2 py-1 w-20 mr-2 text-right transition-colors duration-300 ${
+              darkMode
+                ? "bg-gray-700 border-gray-600 text-white"
+                : "bg-white border-gray-300 text-gray-900"
+            }`}
+            min="0"
+            max="100"
+            step="0.1"
+          />
+          <span
+            className={darkMode ? "text-gray-300" : "text-gray-700"}
+          >
+            %
+          </span>
+        </>
+      ) : (
+        <>
+          <span
+            className={`mr-1 ${
+              darkMode ? "text-gray-300" : "text-gray-700"
+            }`}
+          >
+            {getCurrencySymbol()}
+          </span>
+          <input
+            type="number"
+            value={discountFixed}
+            onChange={(e) =>
+              setDiscountFixed(parseFloat(e.target.value) || 0)
+            }
+            className={`border rounded px-2 py-1 w-20 text-right transition-colors duration-300 ${
+              darkMode
+                ? "bg-gray-700 border-gray-600 text-white"
+                : "bg-white border-gray-300 text-gray-900"
+            }`}
+            min="0"
+            step="0.01"
+          />
+        </>
+      )}
+      <button
+        onClick={() => setIsDiscountPercentage(!isDiscountPercentage)}
+        className={`ml-2 ${
+          darkMode
+            ? "text-blue-400 hover:text-blue-300"
+            : "text-blue-600 hover:text-blue-800"
+        }`}
+        title="Toggle between percentage and amount"
+      >
+        ⇄
+      </button>
+      <button
+        onClick={() => {
+          setShowDiscountInput(false);
+          setDiscountPercentage(0);
+          setDiscountFixed(0);
+        }}
+        className={`ml-2 opacity-0 group-hover:opacity-100 ${
+          darkMode ? "text-red-400" : "text-red-500"
+        }`}
+      >
+        ×
+      </button>
+    </div>
+  ) : (
+    <span className={darkMode ? "text-green-400" : "text-green-600"}>
+      -{getCurrencySymbol()}
+      {calculateDiscountAmount().toFixed(2)}
+    </span>
+  )}
+</div>
+
 
             {/* Shipping Section */}
             <div className="flex justify-between items-center">
@@ -2124,7 +2187,8 @@ export default function HomePage() {
                     }
                     onClick={() => startEditingLabel("shipping")}
                   >
-                    {labels.shipping}
+                 {t(labels.shipping)}
+
                   </span>
                 )}
                 {!showShippingInput && (
@@ -2225,7 +2289,7 @@ export default function HomePage() {
                     }
                     onClick={() => startEditingLabel("total")}
                   >
-                    {labels.total}
+                    {t(labels.total)}
                   </span>
                 )}
               </div>
@@ -2275,7 +2339,7 @@ export default function HomePage() {
                     }
                     onClick={() => startEditingLabel("amountPaid")}
                   >
-                    {labels.amountPaid}
+                   {t(labels.amountPaid)}
                   </span>
                 )}
               </div>
@@ -2344,7 +2408,7 @@ export default function HomePage() {
                     }
                     onClick={() => startEditingLabel("balanceDue")}
                   >
-                    {labels.balanceDue}
+               {t(labels.balanceDue)}
                   </span>
                 )}
               </div>

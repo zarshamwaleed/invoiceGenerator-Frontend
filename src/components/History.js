@@ -6,6 +6,8 @@ import { saveAs } from 'file-saver';
 import Footer from './Footer';
 import { ThemeContext } from '../context/ThemeContext';
 import { InvoiceContext } from '../context/InvoiceContext';
+import { useTranslation } from 'react-i18next';
+
 import { useInvoiceContext } from '../context/InvoiceContext';
 export default function History() {
   const { darkMode } = useContext(ThemeContext);  
@@ -17,6 +19,7 @@ export default function History() {
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+const { t } = useTranslation();
 
   const getTypeFromPath = (path) => {
     if (path === '/') return 'INVOICE';
@@ -166,15 +169,15 @@ catch (error) {
 
   return (
     <div className={`min-h-screen px-6 py-10 transition-colors duration-300 ${darkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-800'}`}>
-      <h1 className="text-2xl font-bold mb-2">History</h1>
+      <h2 className="text-2xl font-bold mb-2">{t("History")}</h2>
       <p className={`text-sm mb-6 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-        We automatically save invoices that you created recently to your device. This is useful when you need to quickly make an edit to an invoice.
-      </p>
+        {t("HistoryDesc")}
+</p>
 
       <div className="flex justify-between items-center mb-4">
         <input
           type="text"
-          placeholder="Search"
+        placeholder={t("Search")}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className={`border px-3 py-1 rounded text-sm w-1/3 ${darkMode ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-800 placeholder-gray-500'}`}
@@ -184,13 +187,13 @@ catch (error) {
             onClick={handleExport}
             className="border px-4 py-2 rounded text-sm hover:text-green-600 transition-colors duration-200"
           >
-            ⬇ Export
+            ⬇ {t("Export")}
           </button>
 <button
   onClick={() => window.location.href = '/'}
   className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded text-sm"
 >
-  New Invoice
+   {t("New Invoice")}
 </button>
 
 
@@ -202,12 +205,12 @@ catch (error) {
           <thead className={darkMode ? 'bg-gray-800 border-b border-gray-700' : 'bg-gray-50 border-b'}>
             <tr className={`text-left ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
               <th className="p-3"> </th>
-              <th className="p-3">CUSTOMER</th>
-              <th className="p-3">TYPE</th>
-              <th className="p-3">REFERENCE</th>
-              <th className="p-3">DATE</th>
-              <th className="p-3">DUE DATE</th>
-              <th className="p-3">TOTAL</th>
+              <th className="p-3">{t("CUSTOMER")}</th>
+              <th className="p-3">{t("TYPE")}</th>
+              <th className="p-3">{t("REFERENCE")}</th>
+              <th className="p-3">{t("DATE")}</th>
+              <th className="p-3">{t("DUE DATE")}</th>
+              <th className="p-3">{t("TOTAL")}</th>
               <th className="p-3"> </th>
             </tr>
           </thead>
@@ -219,7 +222,7 @@ catch (error) {
                     onClick={() => viewInvoice(invoice)}
                     className="border px-3 py-1 rounded text-sm hover:bg-blue-500 hover:text-white transition-colors duration-200"
                   >
-                    View
+                     {t("View")}
                   </button>
                 </td>
                 <td className="p-3">{invoice.billTo || 'No customer'}</td>
@@ -244,7 +247,7 @@ catch (error) {
       {filteredInvoices.length === 0 && (
         <div className="text-center py-10">
           <p className={darkMode ? 'text-gray-400' : 'text-gray-500'}>
-            {searchTerm ? 'No invoices match your search' : 'No invoices found'}
+           {searchTerm ? t("No invoices match your search") : t("No invoices found")}
           </p>
         </div>
       )}
@@ -257,8 +260,7 @@ catch (error) {
           onClick={eraseEverything}
           className="bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded"
         >
-          Erase Everything
-        </button>
+         {t("Erase Everything")}</button>
       </div>
 
       <Footer />

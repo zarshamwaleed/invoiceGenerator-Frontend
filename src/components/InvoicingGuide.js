@@ -4,9 +4,10 @@ import { Link } from "react-router-dom";
 import invoiceGuide from "../images/invoiceGuide.jpg";
 import { useContext } from 'react';
 import { ThemeContext } from '../context/ThemeContext';
-
+import { useTranslation } from 'react-i18next';
 export default function InvoicingGuide() {
     const { darkMode } = useContext(ThemeContext);
+    const { t } = useTranslation();
     return (
         <div className={`min-h-screen  transition-colors duration-300 ${darkMode ? 'bg-gray-900 text-gray-100' : 'bg-white text-[#0e1d34]'}`}>
             {/* Banner Section */}
@@ -23,37 +24,31 @@ export default function InvoicingGuide() {
 
             {/* Guide Content */}
             <div className={`px-6 md:px-20 py-10 max-w-4xl mx-auto ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                <h2 className={`text-2xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-[#0e1d34]'}`}>Invoicing Guide</h2>
+                <h2 className={`text-2xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-[#0e1d34]'}`}>          {t("GuideTitle")}
+        </h2>
+
                 <h3 className={`mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                    Introduction to the Essential Invoicing Guide for Freelancers and Small Business Owners
-                </h3>
+                   {t("GuideIntro")}
+        </h3>
 
                 <p className="mb-4">
-                    Welcome to our comprehensive guide, designed to demystify the invoicing and accounting processes for freelancers
-                    and small business owners. Mastering these crucial skills is essential for ensuring that your business runs
-                    smoothly, payments are received on time, and your financial health is maintained.
-                </p>
+                   {t("GuidePara1")}
+        </p>
 
                 <p className="mb-4">
-                    Proper invoicing and accounting not only secure your cash flow but also offer insights into your business
-                    operations, allowing for informed decision-making and strategic planning.
-                </p>
+                  {t("GuidePara2")}
+        </p>
+                <p className="mb-4">
+                      {t("GuidePara3")}
+        </p>
 
                 <p className="mb-4">
-                    To support you in this critical aspect of your business, we introduce our website's free invoice generator tool.
-                    This intuitive tool simplifies the creation of professional-looking invoices, enabling you to customize and send
-                    invoices with ease, track payments, and manage your finances efficiently.
-                </p>
-
-                <p className="mb-4">
-                    Whether you're billing for the first time or looking to streamline your existing process, our free invoice template
-                    is designed to save you time and reduce the administrative burden of managing your finances.
-                </p>
+                  {t("GuidePara4")}
+        </p>
 
                 <p>
-                    Let's embark on this journey to financial organization and success together, starting with the basics and moving
-                    towards mastering effective invoicing and foundational accounting principles.
-                </p>
+                 {t("GuidePara5")}
+        </p>
             </div>
 
             {/* Footer */}

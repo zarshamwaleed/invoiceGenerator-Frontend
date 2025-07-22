@@ -3,12 +3,19 @@ import { Link, useNavigate } from "react-router-dom";
 import logo from "../images/logo.png";
 import { ThemeContext } from "../context/ThemeContext";
 
+// ✅ ADDED: i18n import
+import { useTranslation } from 'react-i18next';
+
 export default function Navbar() {
   const { darkMode, toggleTheme } = useContext(ThemeContext);
   const navigate = useNavigate();
+
   const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentLanguage, setCurrentLanguage] = useState("English");
+
+  // ✅ ADDED: useTranslation hook
+  const { t, i18n } = useTranslation();
 
   const languages = [
     { code: "en", name: "English", flag: "🇬🇧" },
@@ -30,47 +37,15 @@ export default function Navbar() {
     { code: "sv", name: "Svenska (Swedish)", flag: "🇸🇪" },
     { code: "fi", name: "Suomi (Finnish)", flag: "🇫🇮" },
     { code: "pl", name: "Polski (Polish)", flag: "🇵🇱" },
-    { code: "uk", name: "Українська (Ukrainian)", flag: "🇺🇦" }
+    { code: "uk", name: "Українська (Ukrainian)", flag: "🇺🇦" },
+    { code: "ur", name: "اردو (Urdu)", flag: "🇵🇰" }
   ];
 
-  const translations = {
-    en: {
-      help: "Help",
-      history: "History",
-      guide: "Invoicing Guide",
-      signIn: "Sign In",
-      signUp: "Sign Up",
-      brand: "Invoice-Generator.com"
-    },
-    zh: { help: "帮助", history: "历史", guide: "发票指南", signIn: "登录", signUp: "注册", brand: "发票生成器.com" },
-    es: { help: "Ayuda", history: "Historial", guide: "Guía de Facturación", signIn: "Iniciar sesión", signUp: "Registrarse", brand: "Generador-de-Facturas.com" },
-    fr: { help: "Aide", history: "Historique", guide: "Guide de facturation", signIn: "Connexion", signUp: "S'inscrire", brand: "Générateur-de-Factures.com" },
-    de: { help: "Hilfe", history: "Verlauf", guide: "Rechnungsführer", signIn: "Anmelden", signUp: "Registrieren", brand: "Rechnungs-Generator.com" },
-    it: { help: "Aiuto", history: "Cronologia", guide: "Guida alla fatturazione", signIn: "Accedi", signUp: "Registrati", brand: "Generatore-di-Fatture.com" },
-    pt: { help: "Ajuda", history: "Histórico", guide: "Guia de Faturamento", signIn: "Entrar", signUp: "Registrar", brand: "Gerador-de-Faturas.com" },
-    ru: { help: "Помощь", history: "История", guide: "Руководство по выставлению счетов", signIn: "Войти", signUp: "Зарегистрироваться", brand: "Генератор-Счетов.com" },
-    ja: { help: "ヘルプ", history: "履歴", guide: "請求書ガイド", signIn: "ログイン", signUp: "登録", brand: "請求書ジェネレーター.com" },
-    ko: { help: "도움말", history: "기록", guide: "송장 가이드", signIn: "로그인", signUp: "가입하기", brand: "송장-생성기.com" },
-    ar: { help: "مساعدة", history: "السجل", guide: "دليل الفواتير", signIn: "تسجيل الدخول", signUp: "التسجيل", brand: "منشئ-الفواتير.com" },
-    hi: { help: "सहायता", history: "इतिहास", guide: "चालान गाइड", signIn: "साइन इन", signUp: "साइन अप", brand: "चालान-जनरेटर.com" },
-    bn: { help: "সাহায্য", history: "ইতিহাস", guide: "চালান নির্দেশিকা", signIn: "সাইন ইন", signUp: "নিবন্ধন করুন", brand: "চালান-জেনারেটর.com" },
-    pa: { help: "ਮਦਦ", history: "ਇਤਿਹਾਸ", guide: "ਇਨਵੌਇਸ ਗਾਈਡ", signIn: "ਸਾਈਨ ਇਨ", signUp: "ਸਾਈਨ ਅੱਪ", brand: "ਇਨਵੌਇਸ-ਜਨਰੇਟਰ.com" },
-    tr: { help: "Yardım", history: "Geçmiş", guide: "Fatura Rehberi", signIn: "Giriş Yap", signUp: "Kaydol", brand: "Fatura-Oluşturucu.com" },
-    nl: { help: "Help", history: "Geschiedenis", guide: "Facturatiegids", signIn: "Inloggen", signUp: "Registreren", brand: "Factuur-Generator.com" },
-    sv: { help: "Hjälp", history: "Historik", guide: "Faktureringsguide", signIn: "Logga in", signUp: "Registrera", brand: "Faktura-Generator.com" },
-    fi: { help: "Ohje", history: "Historia", guide: "Laskutusopas", signIn: "Kirjaudu sisään", signUp: "Rekisteröidy", brand: "Laskunluontiohjelma.com" },
-    pl: { help: "Pomoc", history: "Historia", guide: "Przewodnik po fakturowaniu", signIn: "Zaloguj się", signUp: "Zarejestruj się", brand: "Generator-Faktur.com" },
-    uk: { help: "Допомога", history: "Історія", guide: "Посібник з виставлення рахунків", signIn: "Увійти", signUp: "Зареєструватися", brand: "Генератор-Рахунків.com" }
-  };
-
+  // ✅ UPDATED: Use i18n.changeLanguage for global language change
   const handleLanguageChange = (language) => {
+    i18n.changeLanguage(language.code);
     setCurrentLanguage(language.name);
     setShowLanguageDropdown(false);
-  };
-
-  const getTranslation = (key) => {
-    const langCode = languages.find((lang) => lang.name === currentLanguage)?.code || "en";
-    return translations[langCode]?.[key] || translations.en[key];
   };
 
   return (
@@ -79,20 +54,24 @@ export default function Navbar() {
         <div className="flex items-center space-x-2 cursor-pointer" onClick={() => navigate("/")}>
           <img src={logo} alt="Logo" className="h-8" />
           <span className={`text-xl font-semibold ${darkMode ? "text-white" : "text-gray-800"}`}>
-            {getTranslation("brand")}
+            {/* ✅ REPLACED: getTranslation("brand") with t("brand") */}
+            {t("brand")}
           </span>
         </div>
 
         {/* Desktop Nav */}
         <div className="hidden md:flex space-x-6 text-sm">
           <Link to="/help" className={`hover:underline ${darkMode ? "text-gray-300 hover:text-white" : "text-gray-600 hover:text-black"}`}>
-            {getTranslation("help")}
+            {/* ✅ REPLACED: getTranslation("help") */}
+            {t("help")}
           </Link>
           <Link to="/history" className={`hover:underline ${darkMode ? "text-gray-300 hover:text-white" : "text-gray-600 hover:text-black"}`}>
-            {getTranslation("history")}
+            {/* ✅ REPLACED: getTranslation("history") */}
+            {t("history")}
           </Link>
           <Link to="/guide" className={`hover:underline ${darkMode ? "text-gray-300 hover:text-white" : "text-gray-600 hover:text-black"}`}>
-            {getTranslation("guide")}
+            {/* ✅ REPLACED: getTranslation("guide") */}
+            {t("guide")}
           </Link>
         </div>
 
@@ -110,10 +89,11 @@ export default function Navbar() {
                     <button
                       key={language.code}
                       onClick={() => handleLanguageChange(language)}
-                      className={`flex items-center px-3 py-2 text-sm rounded ${currentLanguage === language.name
-                        ? darkMode ? "bg-gray-600 text-white" : "bg-gray-100 text-gray-900"
-                        : darkMode ? "text-gray-300 hover:bg-gray-600" : "text-gray-700 hover:bg-gray-100"
-                        }`}
+                      className={`flex items-center px-3 py-2 text-sm rounded ${
+                        currentLanguage === language.name
+                          ? darkMode ? "bg-gray-600 text-white" : "bg-gray-100 text-gray-900"
+                          : darkMode ? "text-gray-300 hover:bg-gray-600" : "text-gray-700 hover:bg-gray-100"
+                      }`}
                     >
                       <span className="mr-2 text-lg">{language.flag}</span>
                       {language.name}
@@ -131,36 +111,35 @@ export default function Navbar() {
 
           {/* Sign In / Sign Up (Desktop) */}
           <Link to="/signin" className={`hidden md:inline text-sm ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
-            {getTranslation("signIn")}
+            {/* ✅ REPLACED: getTranslation("signIn") */}
+            {t("signIn")}
           </Link>
           <Link to="/signup" className="hidden md:inline">
             <button className="px-4 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded">
-              {getTranslation("signUp")}
+              {/* ✅ REPLACED: getTranslation("signUp") */}
+              {t("signUp")}
             </button>
           </Link>
 
           {/* Hamburger Icon */}
           <button
-  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-  className={`md:hidden text-2xl transition-colors duration-300 ${
-    darkMode ? "text-white" : "text-gray-800"
-  }`}
->
-  {mobileMenuOpen ? "✖" : "☰"}
-</button>
-
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className={`md:hidden text-2xl transition-colors duration-300 ${darkMode ? "text-white" : "text-gray-800"}`}
+          >
+            {mobileMenuOpen ? "✖" : "☰"}
+          </button>
         </div>
       </div>
 
       {/* Mobile Dropdown Menu */}
       {mobileMenuOpen && (
         <div className={`md:hidden px-4 pb-4 space-y-3 ${darkMode ? "bg-gray-800 text-white" : "bg-white text-gray-800"} border-t`}>
-          <Link to="/help" onClick={() => setMobileMenuOpen(false)} className="block py-2 border-b">{getTranslation("help")}</Link>
-          <Link to="/history" onClick={() => setMobileMenuOpen(false)} className="block py-2 border-b">{getTranslation("history")}</Link>
-          <Link to="/guide" onClick={() => setMobileMenuOpen(false)} className="block py-2 border-b">{getTranslation("guide")}</Link>
-          <Link to="/signin" onClick={() => setMobileMenuOpen(false)} className="block py-2 border-b">{getTranslation("signIn")}</Link>
+          <Link to="/help" onClick={() => setMobileMenuOpen(false)} className="block py-2 border-b">{t("help")}</Link>
+          <Link to="/history" onClick={() => setMobileMenuOpen(false)} className="block py-2 border-b">{t("history")}</Link>
+          <Link to="/guide" onClick={() => setMobileMenuOpen(false)} className="block py-2 border-b">{t("guide")}</Link>
+          <Link to="/signin" onClick={() => setMobileMenuOpen(false)} className="block py-2 border-b">{t("signIn")}</Link>
           <Link to="/signup" onClick={() => setMobileMenuOpen(false)}>
-            <button className="w-full mt-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">{getTranslation("signUp")}</button>
+            <button className="w-full mt-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">{t("signUp")}</button>
           </Link>
         </div>
       )}

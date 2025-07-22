@@ -5,11 +5,11 @@ import { ThemeContext } from '../context/ThemeContext';
 import { GoogleLogin } from "@react-oauth/google"; 
 import { jwtDecode } from "jwt-decode";
 import axios from "axios";
-
+import { useTranslation } from 'react-i18next';
 export default function SignUp() {
   const API_BASE_URL =
   process.env.REACT_APP_API_URL || "http://localhost:5000";
-
+ const { t } = useTranslation();
   const { darkMode } = useContext(ThemeContext);
   const navigate = useNavigate();
 
@@ -101,15 +101,15 @@ export default function SignUp() {
       <div className="flex items-center gap-2 mb-6">
         <img src={logo} alt="Logo" className="w-10 h-10" />
         <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-          Invoice-Generator<span className={`${darkMode ? 'text-gray-400' : 'text-gray-500'} font-light`}>.com </span>
+          {t("InvoiceGenerator")}<span className={`${darkMode ? 'text-gray-400' : 'text-gray-500'} font-light`}>.com </span>
         </h1>
       </div>
 
       {/* Signup Form */}
       <div className={`rounded-lg shadow p-12 w-full max-w-lg transition-colors duration-300 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
-        <h2 className={`text-2xl font-bold text-center mb-1 ${darkMode ? 'text-white' : 'text-gray-800'}`}>Create a free account</h2>
+        <h2 className={`text-2xl font-bold text-center mb-1 ${darkMode ? 'text-white' : 'text-gray-800'}`}> {t("CreateAccount")}</h2>
         <p className={`text-center text-sm mb-6 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-          Gain access to more features with an Invoice-Generator.com account.
+          {t("AccountBenefits")}
         </p>
 
         {error && (
@@ -121,20 +121,20 @@ export default function SignUp() {
         {/* Name Fields */}
         <div className="flex gap-4 mb-4">
           <div className="w-1/2">
-            <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>First Name</label>
+            <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}> {t("FirstName")}</label>
             <input 
               type="text" 
-              placeholder="First Name"
+                placeholder={t("FirstName")}
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
               className={`w-full border px-4 py-2 rounded transition-colors duration-300 ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-blue-500'}`} 
             />
           </div>
           <div className="w-1/2">
-            <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Last Name</label>
+            <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>  {t("LastName")}</label>
             <input 
               type="text" 
-              placeholder="Last Name"
+               placeholder={t("LastName")}
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
               className={`w-full border px-4 py-2 rounded transition-colors duration-300 ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-blue-500'}`} 
@@ -144,10 +144,10 @@ export default function SignUp() {
 
         {/* Email */}
         <div className="mb-4">
-          <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Email</label>
+          <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>  {t("Email")}</label>
           <input 
             type="email" 
-            placeholder="Email"
+          placeholder={t("Email")}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className={`w-full border px-4 py-2 rounded transition-colors duration-300 ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-blue-500'}`} 
@@ -156,10 +156,10 @@ export default function SignUp() {
 
         {/* Password */}
         <div className="mb-4">
-          <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Password</label>
+          <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}> {t("Password")}</label>
           <input 
             type="password" 
-            placeholder="Password"
+             placeholder={t("Password")}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className={`w-full border px-4 py-2 rounded transition-colors duration-300 ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-blue-500'}`} 
@@ -176,7 +176,7 @@ export default function SignUp() {
             className={`mr-2 ${darkMode ? 'accent-blue-500' : ''}`} 
           />
           <label htmlFor="terms" className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-            I agree to the Terms of Service
+            {t("AgreeTerms")}
           </label>
         </div>
 
@@ -187,7 +187,7 @@ export default function SignUp() {
           className={`w-full py-2 rounded mb-4 transition-colors duration-300 flex items-center justify-center ${
             darkMode ? 'bg-emerald-700 hover:bg-emerald-600 text-white' : 'bg-emerald-600 hover:bg-emerald-700 text-white'
           } ${isLoading ? "opacity-70 cursor-not-allowed" : ""}`}>
-          {isLoading ? "Creating Account..." : "Sign Up"}
+          {isLoading ? t("CreatingAccount") : t("SignUp")}
         </button>
 
         {/* ✅ Google Signup Button */}
@@ -200,12 +200,12 @@ export default function SignUp() {
 
         {/* Already have account */}
         <p className={`text-center text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-          Already have an account?{' '}
+          {t("AlreadyHaveAccount")}{" "}
           <span 
             className={`cursor-pointer ${darkMode ? 'text-emerald-400 hover:text-emerald-300' : 'text-emerald-600 hover:text-emerald-700'}`} 
             onClick={() => navigate('/signin')}
           >
-            Sign In
+            {t("SignIn")}
           </span>
         </p>
       </div>

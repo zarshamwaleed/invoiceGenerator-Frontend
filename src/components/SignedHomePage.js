@@ -9,7 +9,7 @@ import { InvoiceContext } from "../context/InvoiceContext";
 import { useLocation } from 'react-router-dom';
 import { AuthContext } from "../context/AuthContext";
 import Cookies from 'js-cookie';
-
+import { useTranslation } from "react-i18next";
 export default function HomePage() {
   const { darkMode } = useContext(ThemeContext);
   const navigate = useNavigate();
@@ -18,7 +18,7 @@ export default function HomePage() {
   const location = useLocation();
   const [formData, setFormData] = useState({});
 const [isCreating, setIsCreating] = useState(false);
-
+const { t, i18n } = useTranslation();
   // Helper to map pathname to invoice type
   const getInvoiceType = (path) => {
     if (path === '/') return 'INVOICE';
@@ -87,53 +87,102 @@ const [isCreating, setIsCreating] = useState(false);
 
   // Labels
   const [labels, setLabels] = useState(invoiceData.labels || {
-    billTo: "Bill To",
-    shipTo: "Ship To",
-    date: "Date",
-    paymentTerms: "Payment Terms",
-    dueDate: "Due Date",
-    poNumber: "PO Number",
-    item: "Item",
-    quantity: "Quantity",
-    rate: "Rate",
-    amount: "Amount",
-    notes: "Notes",
-    terms: "Terms",
-    subtotal: "Subtotal",
-    tax: "Tax",
-    discount: "Discount",
-    shipping: "Shipping",
-    total: "Total",
-    amountPaid: "Amount Paid",
-    balanceDue: "Balance Due",
+   billTo: t("Bill To"),
+    shipTo: t("Ship To"),
+    date: t("Date"),
+    paymentTerms: t("Payment Terms"),
+    dueDate: t("Due Date"),
+    poNumber: t("PO Number"),
+    item: t("Item"),
+    quantity: t("Quantity"),
+    rate: t("Rate"),
+    amount: t("Amount"),
+    notes: t("Notes"),
+    terms: t("Terms"),
+    subtotal: t("Subtotal"),
+    tax: t("Tax"),
+    discount: t("Discount"),
+    shipping: t("Shipping"),
+    total: t("Total"),
+    amountPaid: t("Amount Paid"),
+    balanceDue: t("Balance Due"),
   });
 
-  const [ilabels, setiLabels] = useState({
-    item: "Item",
-    quantity: "Quantity",
-    rate: "Rate",
-    amount: "Amount",
-    notes: "Notes",
-    terms: "Terms",
-    subtotal: "Subtotal",
-    tax: "Tax",
-    discount: "Discount",
-    shipping: "Shipping",
-    total: "Total",
-    amountPaid: "Amount Paid",
-    balanceDue: "Balance Due",
-    from: "From",
-    billTo: "Bill To",
-    shipTo: "Ship To",
-    paymentTerms: "Payment Terms",
-    dueDate: "Due Date",
-    poNumber: "PO Number",
-    currency: "Currency",
-  });
+ const [ilabels, setiLabels] = useState({
+   item: t("Item"),
+   quantity: t("Quantity"),
+   rate: t("Rate"),
+   amount: t("Amount"),
+   notes: t("Notes"),
+   terms: t("Terms"),
+   subtotal: t("Subtotal"),
+   tax: t("Tax"),
+   discount: t("Discount"),
+   shipping: t("Shipping"),
+   total: t("Total"),
+   amountPaid: t("Amount Paid"),
+   balanceDue: t("Balance Due"),
+   from: t("From"),
+   billTo: t("Bill To"),
+   shipTo: t("Ship To"),
+   paymentTerms: t("Payment Terms"),
+   dueDate: t("Due Date"),
+   poNumber: t("PO Number"),
+   currency: t("Currency"),
+ });
 
   // Label editing states
   const [isEditingLabel, setIsEditingLabel] = useState(null);
   const [tempLabelValue, setTempLabelValue] = useState("");
+
+  useEffect(() => {
+    setLabels((prev) => ({
+      ...prev,
+      billTo: t("Bill To"),
+      shipTo: t("Ship To"),
+      date: t("Date"),
+      paymentTerms: t("Payment Terms"),
+      dueDate: t("Due Date"),
+      poNumber: t("PO Number"),
+      item: t("Item"),
+      quantity: t("Quantity"),
+      rate: t("Rate"),
+      amount: t("Amount"),
+      notes: t("Notes"),
+      terms: t("Terms"),
+      subtotal: t("Subtotal"),
+      tax: t("Tax"),
+      discount: t("Discount"),
+      shipping: t("Shipping"),
+      total: t("Total"),
+      amountPaid: t("Amount Paid"),
+      balanceDue: t("Balance Due"),
+    }));
+  
+    setiLabels((prev) => ({
+      ...prev,
+      item: t("Item"),
+      quantity: t("Quantity"),
+      rate: t("Rate"),
+      amount: t("Amount"),
+      notes: t("Notes"),
+      terms: t("Terms"),
+      subtotal: t("Subtotal"),
+      tax: t("Tax"),
+      discount: t("Discount"),
+      shipping: t("Shipping"),
+      total: t("Total"),
+      amountPaid: t("Amount Paid"),
+      balanceDue: t("Balance Due"),
+      from: t("From"),
+      billTo: t("Bill To"),
+      shipTo: t("Ship To"),
+      paymentTerms: t("Payment Terms"),
+      dueDate: t("Due Date"),
+      poNumber: t("PO Number"),
+      currency: t("Currency"),
+    }));
+  }, [i18n.language]);
 
   // Load invoice data when editing
   useEffect(() => {
@@ -1038,45 +1087,34 @@ return (
       </div>
 
       {/* Header Section */}
-      {isVisible && (
-        <div
-          className={`max-w-7xl mx-auto p-6 rounded-lg ${
-            darkMode ? "bg-gray-800" : "bg-gray-50"
-          } transition-colors duration-300`}
-        >
-          <h1
-            className={`text-3xl font-bold mb-2 ${
-              darkMode ? "text-white" : "text-gray-900"
-            }`}
-          >
-            Free Invoice Template
-          </h1>
-          <h2
-            className={`text-xl font-semibold mb-4 ${
-              darkMode ? "text-gray-300" : "text-gray-700"
-            }`}
-          >
-            Make beautiful Invoices with one click!
-          </h2>
-          <p className={`mb-2 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
-            Welcome to the original Invoice Generator, trusted by millions of
-            people. Invoice Generator lets you instantly make Invoices with our
-            attractive invoice template straight from your web browser.
-          </p>
-          <p className={`mb-6 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
-            Did we also mention that Invoice Generator lets you generate an
-            unlimited number of Invoices?
-          </p>
-          <button
-            className={`px-4 py-2 rounded hover:bg-green-700 transition-colors duration-300 ${
-              darkMode ? "bg-green-600 text-white" : "bg-green-600 text-white"
-            }`}
-            onClick={handleHide}
-          >
-            OK, got it!
-          </button>
-        </div>
-      )}
+  {isVisible && (
+    <div
+      className={`max-w-7xl mx-auto p-6 rounded-lg ${
+        darkMode ? "bg-gray-800" : "bg-gray-50"
+      } transition-colors duration-300`}
+    >
+      <h1 className={`text-3xl font-bold mb-2 ${darkMode ? "text-white" : "text-gray-900"}`}>
+       {t("HeroTitle")}
+      </h1>
+      <h2 className={`text-xl font-semibold mb-4 ${darkMode ? "text-gray-300" : "text-gray-700"}`}>
+        {t("HeroSubtitle")}
+      </h2>
+      <p className={`mb-2 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
+          {t("HeroParagraph1")}
+      </p>
+      <p className={`mb-6 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
+        {t("HeroParagraph2")}
+      </p>
+      <button
+        className={`px-4 py-2 rounded hover:bg-green-700 transition-colors duration-300 ${
+          darkMode ? "bg-green-600 text-white" : "bg-green-600 text-white"
+        }`}
+        onClick={handleHide}
+      >
+     {t("HeroCTA")}
+      </button>
+    </div>
+  )}
 
       {/* Invoice Section */}
       <div
@@ -1116,7 +1154,7 @@ return (
                 </button>
               </div>
             ) : (
-              "+ Add Your Logo"
+              t("+ Add Your Logo")
             )}
             <input
               type="file"
@@ -1128,7 +1166,7 @@ return (
           </div>
 
           <input
-            placeholder="Who is this from?"
+          placeholder={t("Who is this from?")}
             value={from}
             onChange={(e) => setFrom(e.target.value)}
             className={`w-full border rounded px-3 py-2 transition-colors duration-300 ${
@@ -1178,12 +1216,12 @@ return (
                     } cursor-pointer`}
                     onClick={() => startEditingLabel("billTo")}
                   >
-                    {labels.billTo}
+                    {labels.billTo || t("Bill To")}
                   </label>
                 )}
               </div>
               <input
-                placeholder="Who is this to?"
+                placeholder={t("Who is this to?")}
                 value={billTo}
                 onChange={(e) => setBillTo(e.target.value)}
                 className={`w-full border rounded px-3 py-2 transition-colors duration-300 
@@ -1234,13 +1272,13 @@ return (
                     } cursor-pointer`}
                     onClick={() => startEditingLabel("shipTo")}
                   >
-                    {labels.shipTo}
+                   {labels.shipTo || t("Ship To")}
                   </label>
                 )}
               </div>
 
               <input
-                placeholder="(optional)"
+                 placeholder={t("(optional)")}
                 value={shipTo}
                 onChange={(e) => setShipTo(e.target.value)}
                 className={`w-full border rounded px-3 py-2 transition-colors duration-300 
@@ -1261,7 +1299,7 @@ return (
       darkMode ? "text-white" : "text-gray-900"
     }`}
   >
-    INVOICE
+     {t("INVOICE")}
   </h2>
 
   <div className="space-y-6">
@@ -1272,11 +1310,11 @@ return (
           darkMode ? "text-white" : "text-gray-800"
         }`}
       >
-        #
+      {t("#")}
       </label>
 
       <input
-        placeholder="#"
+      placeholder={t("Invoice Number")}
         value={invoiceNumber}
         onChange={(e) => setInvoiceNumber(e.target.value)}
         className={`w-full sm:flex-1 border rounded px-3 py-2 transition-colors duration-300 
@@ -1327,7 +1365,7 @@ return (
         } cursor-pointer`}
         onClick={() => startEditingLabel("date")}
       >
-        {labels.date}
+        {labels.date || t("Date")}
       </label>
     )}
   </div>
@@ -1385,13 +1423,13 @@ return (
             } cursor-pointer`}
             onClick={() => startEditingLabel("paymentTerms")}
           >
-            {labels.paymentTerms}
+            {labels.paymentTerms || t("Payment Terms")}
           </label>
         )}
       </div>
 
       <input
-        placeholder="Payment Terms"
+        placeholder={t("Payment Terms")}
         value={paymentTerms}
         onChange={(e) => setPaymentTerms(e.target.value)}
         className={`w-full sm:flex-1 border rounded px-3 py-2 transition-colors duration-300 
@@ -1442,7 +1480,7 @@ return (
         } cursor-pointer`}
         onClick={() => startEditingLabel("dueDate")}
       >
-        {labels.dueDate}
+       {labels.dueDate || t("Due Date")}
       </label>
     )}
   </div>
@@ -1501,13 +1539,13 @@ return (
             } cursor-pointer`}
             onClick={() => startEditingLabel("poNumber")}
           >
-            {labels.poNumber}
+            {labels.poNumber || t("PO Number")}
           </label>
         )}
       </div>
 
       <input
-        placeholder="PO Number"
+         placeholder={t("PO Number")}
         value={poNumber}
         onChange={(e) => setPoNumber(e.target.value)}
         className={`w-full sm:flex-1 border rounded px-3 py-2 transition-colors duration-300 
@@ -1557,10 +1595,10 @@ return (
           d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"
         />
       </svg>
-      Creating...
+      {("Creating...")}
     </>
   ) : (
-    "Create Invoice"
+    t("Create Invoice")
   )}
 </button>
 
@@ -1571,7 +1609,7 @@ return (
                 darkMode ? "text-gray-300" : "text-gray-600"
               }`}
             >
-              Currency
+              {t("Currency")}
             </label>
             <select
               className={`w-full border rounded px-2 py-1 transition-colors duration-300 ${
@@ -1582,27 +1620,27 @@ return (
               value={icurrency}
               onChange={(e) => setiCurrency(e.target.value)}
             >
-              <option value="USD">USD ($)</option>
-              <option value="EUR">EUR (€)</option>
-              <option value="GBP">GBP (£)</option>
-              <option value="JPY">JPY (¥)</option>
-              <option value="CNY">CNY (¥)</option>
-              <option value="AUD">AUD (A$)</option>
-              <option value="CAD">CAD (C$)</option>
-              <option value="CHF">CHF (CHF)</option>
-              <option value="INR">INR (₹)</option>
-              <option value="PKR">PKR (₨)</option>
-              <option value="ZAR">ZAR (R)</option>
-              <option value="SEK">SEK (kr)</option>
-              <option value="NOK">NOK (kr)</option>
-              <option value="DKK">DKK (kr)</option>
-              <option value="RUB">RUB (₽)</option>
-              <option value="SGD">SGD (S$)</option>
-              <option value="HKD">HKD (HK$)</option>
-              <option value="NZD">NZD (NZ$)</option>
-              <option value="THB">THB (฿)</option>
-              <option value="MYR">MYR (RM)</option>
-              <option value="SAR">SAR (﷼)</option>
+               <option value="USD">{t("USD ($)")}</option>
+  <option value="EUR">{t("EUR (€)")}</option>
+  <option value="GBP">{t("GBP (£)")}</option>
+  <option value="JPY">{t("JPY (¥)")}</option>
+  <option value="CNY">{t("CNY (¥)")}</option>
+  <option value="AUD">{t("AUD (A$)")}</option>
+  <option value="CAD">{t("CAD (C$)")}</option>
+  <option value="CHF">{t("CHF (CHF)")}</option>
+  <option value="INR">{t("INR (₹)")}</option>
+  <option value="PKR">{t("PKR (₨)")}</option>
+  <option value="ZAR">{t("ZAR (R)")}</option>
+  <option value="SEK">{t("SEK (kr)")}</option>
+  <option value="NOK">{t("NOK (kr)")}</option>
+  <option value="DKK">{t("DKK (kr)")}</option>
+  <option value="RUB">{t("RUB (₽)")}</option>
+  <option value="SGD">{t("SGD (S$)")}</option>
+  <option value="HKD">{t("HKD (HK$)")}</option>
+  <option value="NZD">{t("NZD (NZ$)")}</option>
+  <option value="THB">{t("THB (฿)")}</option>
+  <option value="MYR">{t("MYR (RM)")}</option>
+  <option value="SAR">{t("SAR (﷼)")}</option>
             </select>
           </div>
 
@@ -1612,7 +1650,7 @@ return (
     darkMode ? "text-green-400" : "text-green-600"
   }`}
 >
-  Save Default
+ {t("Save Default")}
 </p>
         </div>  
       </div>
@@ -1659,7 +1697,7 @@ return (
                 onClick={() => startEditingLabel("item")}
                 className="cursor-pointer"
               >
-                {labels.item}
+                {t(labels.item)}
               </span>
             )}
           </div>
@@ -1698,7 +1736,7 @@ return (
                 onClick={() => startEditingLabel("quantity")}
                 className="cursor-pointer"
               >
-                {labels.quantity}
+                 {t(labels.quantity)}
               </span>
             )}
           </div>
@@ -1737,7 +1775,7 @@ return (
                 onClick={() => startEditingLabel("rate")}
                 className="cursor-pointer"
               >
-                {labels.rate}
+                {t(labels.rate)}
               </span>
             )}
           </div>
@@ -1776,7 +1814,7 @@ return (
                 onClick={() => startEditingLabel("amount")}
                 className="cursor-pointer"
               >
-                {labels.amount}
+                {t(labels.amount)}
               </span>
             )}
           </div>
@@ -1797,7 +1835,7 @@ return (
                     ? "bg-gray-800 border-gray-700 text-white placeholder-gray-400"
                     : "bg-white border-gray-200 text-gray-900 placeholder-gray-500"
                 }`}
-                placeholder="Description of item/service..."
+               placeholder={t("Description of item/service...")}
                 value={item.description}
                 onChange={(e) =>
                   handleDescriptionChange(item.id, e.target.value)
@@ -1865,7 +1903,7 @@ return (
                 : "border-green-600 text-green-600 hover:bg-green-50"
             }`}
           >
-            + Line Item
+            + {t("Line Item")}
           </button>
         </div>
 
@@ -1911,12 +1949,12 @@ return (
                     } cursor-pointer`}
                     onClick={() => startEditingLabel("notes")}
                   >
-                    {labels.notes}
+                      {t(labels.notes)}
                   </label>
                 )}
               </div>
               <textarea
-                placeholder="Notes – any relevant information not already covered"
+     placeholder={t("Notes – any relevant information not already covered")}
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 className={`w-full border rounded px-3 py-2 transition-colors duration-300 ${
@@ -1965,12 +2003,12 @@ return (
                     } cursor-pointer`}
                     onClick={() => startEditingLabel("terms")}
                   >
-                    {labels.terms}
+                       {t(labels.terms)}
                   </label>
                 )}
               </div>
               <textarea
-                placeholder="Terms and conditions – late fees, payment methods, delivery schedule"
+           placeholder={t("Terms and conditions – late fees, payment methods, delivery schedule")}
                 value={terms} // ✅ bind value
                 onChange={(e) => setTerms(e.target.value)} // ✅ update state
                 className={`w-full border rounded px-3 py-2 transition-colors duration-300 ${
@@ -2029,7 +2067,7 @@ return (
                     }
                     onClick={() => startEditingLabel("subtotal")}
                   >
-                    {labels.subtotal}
+                   {t(labels.subtotal)}
                   </span>
                 )}
               </div>
@@ -2080,7 +2118,7 @@ return (
                     }
                     onClick={() => startEditingLabel("tax")}
                   >
-                    {labels.tax}
+                     {t(labels.tax)}
                   </span>
                 )}
                 {!showTaxInput && (
@@ -2221,7 +2259,7 @@ return (
                     }
                     onClick={() => startEditingLabel("discount")}
                   >
-                    {labels.discount}
+                        {t(labels.discount)}
                   </span>
                 )}
                 {!showDiscountInput && (
@@ -2364,7 +2402,7 @@ return (
                     }
                     onClick={() => startEditingLabel("shipping")}
                   >
-                    {labels.shipping}
+                     {t(labels.shipping)}
                   </span>
                 )}
                 {!showShippingInput && (
@@ -2465,7 +2503,7 @@ return (
                     }
                     onClick={() => startEditingLabel("total")}
                   >
-                    {labels.total}
+                        {t(labels.total)}
                   </span>
                 )}
               </div>
@@ -2515,7 +2553,7 @@ return (
                     }
                     onClick={() => startEditingLabel("amountPaid")}
                   >
-                    {labels.amountPaid}
+                    {t(labels.amountPaid)}
                   </span>
                 )}
               </div>
@@ -2584,7 +2622,7 @@ return (
                     }
                     onClick={() => startEditingLabel("balanceDue")}
                   >
-                    {labels.balanceDue}
+                 {t(labels.balanceDue)}
                   </span>
                 )}
               </div>

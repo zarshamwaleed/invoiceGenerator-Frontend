@@ -6,7 +6,7 @@ import { AuthContext } from "../context/AuthContext";
 import Footer from "./Footer";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
-
+import { useTranslation } from "react-i18next"; // <-- Added
 // Custom hook for detecting clicks outside an element
 // const useOutsideClick = (ref, callback) => {
 //   useEffect(() => {
@@ -31,7 +31,7 @@ export default function MyInvoices() {
   const [loading, setLoading] = useState(true);
   const [pdfGenerating, setPdfGenerating] = useState(false);
   const navigate = useNavigate();
-
+ const { t } = useTranslation();
   // Refs for dropdowns
   const mainDropdownRef = useRef(null);
   const actionDropdownRef = useRef(null);
@@ -182,7 +182,28 @@ const handleDownloadClick = async (e, invoice) => {
 
   try {
     const doc = new jsPDF("p", "pt", "a4"); // ✅ Better spacing on A4
-    const L = invoice.labels || {}; // dynamic labels fallback
+   const L = {
+  billTo: invoice.labels?.billTo || t("Bill To"),
+  shipTo: invoice.labels?.shipTo || t("Ship To"),
+  date: invoice.labels?.date || t("Date"),
+  paymentTerms: invoice.labels?.paymentTerms || t("Payment Terms"),
+  dueDate: invoice.labels?.dueDate || t("Due Date"),
+  poNumber: invoice.labels?.poNumber || t("PO Number"),
+  item: invoice.labels?.item || t("Item"),
+  quantity: invoice.labels?.quantity || t("Quantity"),
+  rate: invoice.labels?.rate || t("Rate"),
+  amount: invoice.labels?.amount || t("Amount"),
+  notes: invoice.labels?.notes || t("Notes"),
+  terms: invoice.labels?.terms || t("Terms"),
+  subtotal: invoice.labels?.subtotal || t("Subtotal"),
+  tax: invoice.labels?.tax || t("Tax"),
+  discount: invoice.labels?.discount || t("Discount"),
+  shipping: invoice.labels?.shipping || t("Shipping"),
+  total: invoice.labels?.total || t("Total"),
+  amountPaid: invoice.labels?.amountPaid || t("Amount Paid"),
+  balanceDue: invoice.labels?.balanceDue || t("Balance Due"),
+};
+
 
     let y = 40; // more breathing space at top
 
@@ -456,14 +477,14 @@ if (invoice.terms) {
         }`}
       >
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-semibold">My Invoices</h1>
+          <h1 className="text-2xl font-semibold">{t("MyInvoices")}</h1>
           <div className="relative" ref={mainDropdownRef}>
             <div className="flex rounded-md shadow overflow-hidden">
               <button
                 className="bg-green-600 hover:bg-green-700 text-white font-medium px-5 py-2"
                 onClick={() => navigate("/")}
               >
-                New Invoice
+                 {t("NewInvoice")}
               </button>
               <button
                 onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -503,7 +524,7 @@ if (invoice.terms) {
                       : "text-gray-700 hover:bg-gray-100"
                   }`}
                 >
-                  New Credit Note
+                 {t("NewCreditNote")}
                 </button>
                 <button
                   onClick={() => {
@@ -516,7 +537,7 @@ if (invoice.terms) {
                       : "text-gray-700 hover:bg-gray-100"
                   }`}
                 >
-                  New Quote
+                   {t("NewQuote")}
                 </button>
               </div>
             )}
@@ -532,12 +553,12 @@ if (invoice.terms) {
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left border-b font-medium">
-                  <th className="px-4 py-2">CUSTOMER</th>
-                  <th className="px-4 py-2">REFERENCE</th>
-                  <th className="px-4 py-2">DATE</th>
-                  <th className="px-4 py-2">DUE DATE</th>
-                  <th className="px-4 py-2">STATUS</th>
-                  <th className="px-4 py-2">TOTAL</th>
+                  <th className="px-4 py-2">{t("Customer")}</th>
+                  <th className="px-4 py-2">{t("Reference")}</th>
+                  <th className="px-4 py-2">{t("Dates")}</th>
+                  <th className="px-4 py-2">{t("DueDates")}</th>
+                  <th className="px-4 py-2">{t("Status")}</th>
+                  <th className="px-4 py-2">{t("Totals")}</th>
                   <th className="px-4 py-2"></th>
                 </tr>
               </thead>
@@ -551,7 +572,7 @@ if (invoice.terms) {
                         navigate(`/invoice/${invoice.invoiceNumber}`)
                       }
                     >
-                      Invoice #{invoice.invoiceNumber}
+                      {t("Invoice")} #{invoice.invoiceNumber}
                     </td>
                     <td className="px-4 py-3">{invoice.date}</td>
                     <td className="px-4 py-3">{invoice.dueDate}</td>
@@ -559,11 +580,11 @@ if (invoice.terms) {
                       {invoice.balanceDue === 0 ? (
                         <span className="text-emerald-600 bg-emerald-100 px-2 py-1 rounded text-xs font-medium inline-flex items-center">
                           <span className="w-2 h-2 rounded-full bg-emerald-600 mr-1"></span>
-                          Paid
+                          {t("Paid")}
                         </span>
                       ) : (
                         <span className="text-yellow-600 bg-yellow-100 px-2 py-1 rounded text-xs font-medium">
-                          Unpaid
+                        {t("Unpaid")}
                         </span>
                       )}
                     </td>
@@ -579,7 +600,7 @@ if (invoice.terms) {
                           }
                           className="bg-gray-100 hover:bg-gray-200 text-gray-800 px-3 py-1 rounded-md text-sm font-medium"
                         >
-                          View
+                          {t("View")}
                         </button>
 
                         <div className="relative" ref={actionDropdownRef}>
@@ -640,9 +661,9 @@ if (invoice.terms) {
                                     d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
                                   />
                                 </svg>
-                                {pdfGenerating
-                                  ? "Generating..."
-                                  : "Download PDF"}
+                               {pdfGenerating
+  ? t("Generating")
+  : t("DownloadPDF")}
                               </button>
                              
 <Link
@@ -670,7 +691,7 @@ if (invoice.terms) {
       d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
     />
   </svg>
-  Edit
+{t("Edit")}
 </Link>
 
                               <button
@@ -685,8 +706,8 @@ if (invoice.terms) {
                               >
                                 <span className="text-lg">✔️</span>
                                 {invoice.status === "PAID"
-                                  ? "Mark as Unpaid"
-                                  : "Mark as Paid"}
+    ? t("MarkAsUnpaid")
+    : t("MarkAsPaid")}
                               </button>
                               <button
                                 onClick={() => handleDeleteInvoice(invoice._id)}
@@ -696,7 +717,7 @@ if (invoice.terms) {
                                     : "text-red-600 hover:bg-red-50"
                                 } flex items-center gap-2`}
                               >
-                                <span className="text-lg">🗑️</span> Delete
+                                <span className="text-lg">🗑️</span> {t("Delete")}
                               </button>
                             </div>
                           )}
