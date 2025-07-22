@@ -7,12 +7,14 @@ import { useNavigate } from "react-router-dom";
 import { usePDF } from "react-to-pdf";
 import { InvoiceContext } from "../context/InvoiceContext";
  import { useLocation } from 'react-router-dom';
+ import Cookies from 'js-cookie';
 export default function HomePage() {
   const { darkMode } = useContext(ThemeContext);
   const { invoiceData, setInvoiceData } = useContext(InvoiceContext);
   const navigate = useNavigate();
 
- 
+ const [isDownloading, setIsDownloading] = useState(false);
+
 
 const location = useLocation();
 
@@ -173,9 +175,18 @@ const invoiceType = getInvoiceType(location.pathname);
     setiAmountPaid(amountPaid);
   }, [amountPaid]);
 
-  const handleHide = () => {
+  useEffect(() => {
+  const dismissed = Cookies.get('welcomeDismissed');
+  if (dismissed === 'true') {
     setIsVisible(false);
-  };
+  }
+}, []);
+
+ const handleHide = () => {
+  setIsVisible(false);
+  Cookies.set('welcomeDismissed', 'true', { expires: 7}); // Expires in 30 days
+};
+
 
   const addItem = () => {
     const newId =
@@ -414,37 +425,45 @@ const getCurrencySymbol = () => currencySymbols[icurrency] || "$";
 };
 
   // Update the download handler
- const handleDownloadClick = async (e) => {
+const handleDownloadClick = async (e) => {
   e.preventDefault();
 
-  try {
-    // First save invoice to database
-    const savedInvoice = await handleSubmit(e);
+  if (isDownloading) return; // Prevent multiple clicks
 
-    // Update invoice number if returned by backend
+  setIsDownloading(true);
+
+  try {
+    // ✅ Save invoice first
+    const savedInvoice = await handleSubmit();
+
+    // ✅ Update invoice number if backend returned it
     if (savedInvoice.invoice?.invoiceNumber) {
       setInvoiceNumber(savedInvoice.invoice.invoiceNumber);
     }
 
-    // Generate PDF
+    // ✅ Generate PDF & navigate
     requestAnimationFrame(() => {
       toPDF();
-      navigate('/thankyou');
+      setTimeout(() => {
+        setIsDownloading(false); // ✅ Reset after short delay
+        navigate("/thankyou");
+      }, 1000); // adjust timing if necessary
+    });
+  } catch (error) {
+    console.error("Error in download process:", error);
+
+    Swal.fire({
+      title: "❌ Failed to Generate Invoice",
+      text: "Something went wrong during the download process. Please try again.",
+      icon: "error",
+      confirmButtonText: "OK",
+      confirmButtonColor: "#d33",
     });
 
-  } catch (error) {
-  console.error("Error in download process:", error);
-
-  Swal.fire({
-    title: '❌ Failed to Generate Invoice',
-    text: 'Something went wrong during the download process. Please try again.',
-    icon: 'error',
-    confirmButtonText: 'OK',
-    confirmButtonColor: '#d33'
-  });
-}
-
+    setIsDownloading(false); // Ensure we re-enable the button
+  }
 };
+
 
 const handleSaveDefault = async () => {
  if (!invoiceNumber) {
@@ -796,13 +815,14 @@ const checkInvoiceExists = async (invoiceNumber) => {
       )}
 
       {/* Invoice Section */}
-      <div
-        className={`max-w-7xl mx-auto mt-10 border rounded-lg p-6 flex flex-col lg:flex-row transition-colors duration-300 ${
-          darkMode
-            ? "bg-gray-800 border-gray-700"
-            : "bg-gray-50 border-gray-200"
-        }`}
-      >
+    <div
+  className={`max-w-7xl mx-auto ${
+    isVisible ? "mt-10" : "mt-0"
+  } border rounded-lg p-6 flex flex-col lg:flex-row transition-all duration-300 ${
+    darkMode ? "bg-gray-800 border-gray-700" : "bg-gray-50 border-gray-200"
+  }`}
+>
+
         {/* Left section */}
         <div className="flex-1 space-y-4">
           <div
@@ -1238,16 +1258,48 @@ const checkInvoiceExists = async (invoiceNumber) => {
 
         {/* Right section */}
         <div className="lg:w-48 mt-10 lg:mt-0 space-y-4 pt-20">
-          <button
-            onClick={handleDownloadClick} // Only call handleDownloadClick, it handles everything
-            className={`mt-6 w-full py-2 rounded transition-colors duration-300 ${
-              darkMode
-                ? "bg-emerald-700 hover:bg-emerald-600 text-white"
-                : "bg-emerald-600 hover:bg-emerald-700 text-white"
-            }`}
-          >
-            Download Invoice
-          </button>
+         <button
+  onClick={handleDownloadClick}
+  disabled={isDownloading}
+  className={`mt-6 w-full py-2 rounded flex justify-center items-center transition-colors duration-300 ${
+    darkMode
+      ? isDownloading
+        ? "bg-emerald-800 text-white cursor-not-allowed"
+        : "bg-emerald-700 hover:bg-emerald-600 text-white"
+      : isDownloading
+        ? "bg-emerald-500 text-white cursor-not-allowed"
+        : "bg-emerald-600 hover:bg-emerald-700 text-white"
+  }`}
+>
+  {isDownloading ? (
+    <>
+      <svg
+        className="animate-spin h-5 w-5 mr-2 text-white"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <circle
+          className="opacity-25"
+          cx="12"
+          cy="12"
+          r="10"
+          stroke="currentColor"
+          strokeWidth="4"
+        />
+        <path
+          className="opacity-75"
+          fill="currentColor"
+          d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"
+        />
+      </svg>
+      Preparing PDF...
+    </>
+  ) : (
+    "Download Invoice"
+  )}
+</button>
+
 
           <div>
             <label

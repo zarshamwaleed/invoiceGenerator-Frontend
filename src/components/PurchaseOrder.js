@@ -1,32 +1,31 @@
 // src/components/HomePage.js
 import React, { useState, useRef, useContext, useEffect } from "react";
-import Swal from 'sweetalert2';
+import Swal from "sweetalert2";
 import Footer from "./Footer";
 import { ThemeContext } from "../context/ThemeContext";
 import { useNavigate } from "react-router-dom";
 import { usePDF } from "react-to-pdf";
 import { InvoiceContext } from "../context/InvoiceContext";
- import { useLocation } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
+import Cookies from "js-cookie";
 export default function HomePage() {
   const { darkMode } = useContext(ThemeContext);
   const { invoiceData, setInvoiceData } = useContext(InvoiceContext);
   const navigate = useNavigate();
+const [isDownloading, setIsDownloading] = useState(false);
 
- 
+  const location = useLocation();
 
-const location = useLocation();
+  // Helper to map pathname to invoice type
+  const getInvoiceType = (path) => {
+    if (path === "/") return "INVOICE";
+    if (path.includes("credit-note")) return "CREDIT NOTE";
+    if (path.includes("quote")) return "QUOTE";
+    if (path.includes("purchase-order")) return "PURCHASE ORDER";
+    return "INVOICE";
+  };
 
-// Helper to map pathname to invoice type
-const getInvoiceType = (path) => {
-  if (path === '/') return 'INVOICE';
-  if (path.includes('credit-note')) return 'CREDIT NOTE';
-  if (path.includes('quote')) return 'QUOTE';
-  if (path.includes('purchase-order')) return 'PURCHASE ORDER';
-  return 'INVOICE';
-};
-
-const invoiceType = getInvoiceType(location.pathname);
-
+  const invoiceType = getInvoiceType(location.pathname);
 
   // UI States
   const [isVisible, setIsVisible] = useState(true);
@@ -173,8 +172,16 @@ const invoiceType = getInvoiceType(location.pathname);
     setiAmountPaid(amountPaid);
   }, [amountPaid]);
 
+  useEffect(() => {
+    const dismissed = Cookies.get("welcomeDismissed");
+    if (dismissed === "true") {
+      setIsVisible(false);
+    }
+  }, []);
+
   const handleHide = () => {
     setIsVisible(false);
+    Cookies.set("welcomeDismissed", "true", { expires: 7 }); // Expires in 30 days
   };
 
   const addItem = () => {
@@ -244,33 +251,33 @@ const invoiceType = getInvoiceType(location.pathname);
     }
   };
 
-// Store currency code → symbol mapping
-const currencySymbols = {
-  USD: "$",
-  EUR: "€",
-  GBP: "£",
-  JPY: "¥",
-  CNY: "¥",
-  AUD: "A$",
-  CAD: "C$",
-  CHF: "CHF",
-  INR: "₹",
-  PKR: "₨",
-  ZAR: "R",
-  SEK: "kr",
-  NOK: "kr",
-  DKK: "kr",
-  RUB: "₽",
-  SGD: "S$",
-  HKD: "HK$",
-  NZD: "NZ$",
-  THB: "฿",
-  MYR: "RM",
-  SAR: "﷼",
-};
+  // Store currency code → symbol mapping
+  const currencySymbols = {
+    USD: "$",
+    EUR: "€",
+    GBP: "£",
+    JPY: "¥",
+    CNY: "¥",
+    AUD: "A$",
+    CAD: "C$",
+    CHF: "CHF",
+    INR: "₹",
+    PKR: "₨",
+    ZAR: "R",
+    SEK: "kr",
+    NOK: "kr",
+    DKK: "kr",
+    RUB: "₽",
+    SGD: "S$",
+    HKD: "HK$",
+    NZD: "NZ$",
+    THB: "฿",
+    MYR: "RM",
+    SAR: "﷼",
+  };
 
-// This returns the correct symbol for the currently selected currency
-const getCurrencySymbol = () => currencySymbols[icurrency] || "$";
+  // This returns the correct symbol for the currently selected currency
+  const getCurrencySymbol = () => currencySymbols[icurrency] || "$";
 
   const calculateSubtotal = () => {
     return items.reduce((sum, item) => sum + item.amount, 0);
@@ -334,221 +341,225 @@ const getCurrencySymbol = () => currencySymbols[icurrency] || "$";
 
   // Update the handleSubmit function to update context and save to backend
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  // Calculate all amounts
-  const subtotal = calculateSubtotal();
-  const tax = calculateTaxAmount();
-  const discount = calculateDiscountAmount();
-  const total = calculateTotal();
-  const balanceDue = calculateBalanceDue();
+    // Calculate all amounts
+    const subtotal = calculateSubtotal();
+    const tax = calculateTaxAmount();
+    const discount = calculateDiscountAmount();
+    const total = calculateTotal();
+    const balanceDue = calculateBalanceDue();
 
-  const invoiceDataToSave = {
-     type: invoiceType,
-    logo: ilogo,
-    from,
-    billTo,
-    shipTo,
-    date: date || new Date().toISOString().split('T')[0],
-    paymentTerms,
-    dueDate,
-    poNumber,
-    currency: icurrency,
-    subtotal,
-    tax,
-    discount,
-    shipping: shippingAmount,
-    total,
-    amountPaid: amountPaid,
-    balanceDue,
-    notes,
-    terms,
-    invoiceNumber: invoiceNumber || `INV-${Date.now()}`,
-    lineItems: items.map(item => ({
-      description: item.description,
-      quantity: item.quantity,
-      rate: item.price,
-      amount: item.amount
-    })),
-    labels: {
-      ...labels,
-      // Ensure all label fields are included
-      from: labels.from || "From",
-      billTo: labels.billTo || "Bill To",
-      shipTo: labels.shipTo || "Ship To",
-      paymentTerms: labels.paymentTerms || "Payment Terms",
-      dueDate: labels.dueDate || "Due Date",
-      poNumber: labels.poNumber || "PO Number",
-      currency: labels.currency || "Currency"
+    const invoiceDataToSave = {
+      type: invoiceType,
+      logo: ilogo,
+      from,
+      billTo,
+      shipTo,
+      date: date || new Date().toISOString().split("T")[0],
+      paymentTerms,
+      dueDate,
+      poNumber,
+      currency: icurrency,
+      subtotal,
+      tax,
+      discount,
+      shipping: shippingAmount,
+      total,
+      amountPaid: amountPaid,
+      balanceDue,
+      notes,
+      terms,
+      invoiceNumber: invoiceNumber || `INV-${Date.now()}`,
+      lineItems: items.map((item) => ({
+        description: item.description,
+        quantity: item.quantity,
+        rate: item.price,
+        amount: item.amount,
+      })),
+      labels: {
+        ...labels,
+        // Ensure all label fields are included
+        from: labels.from || "From",
+        billTo: labels.billTo || "Bill To",
+        shipTo: labels.shipTo || "Ship To",
+        paymentTerms: labels.paymentTerms || "Payment Terms",
+        dueDate: labels.dueDate || "Due Date",
+        poNumber: labels.poNumber || "PO Number",
+        currency: labels.currency || "Currency",
+      },
+    };
+
+    // Update context
+    setInvoiceData(invoiceDataToSave);
+
+    try {
+      const response = await fetch(
+        "https://invoice-generator-backend-liard.vercel.app/invoice",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(invoiceDataToSave),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to save invoice");
+      }
+
+      const result = await response.json();
+      console.log("✅ Invoice saved:", result);
+      return result;
+    } catch (error) {
+      console.error("❌ Error saving invoice:", error);
+      throw error;
     }
   };
-
-  // Update context
-  setInvoiceData(invoiceDataToSave);
-
- try {
-  const response = await fetch(
-    "https://invoice-generator-backend-liard.vercel.app/invoice",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(invoiceDataToSave),
-    }
-  );
-
-  if (!response.ok) {
-    throw new Error("Failed to save invoice");
-  }
-
-  const result = await response.json();
-  console.log("✅ Invoice saved:", result);
-  return result;
-} catch (error) {
-    console.error("❌ Error saving invoice:", error);
-    throw error;
-  }
-};
 
   // Update the download handler
  const handleDownloadClick = async (e) => {
   e.preventDefault();
 
-  try {
-    // First save invoice to database
-    const savedInvoice = await handleSubmit(e);
+  if (isDownloading) return; // Prevent multiple clicks
 
-    // Update invoice number if returned by backend
+  setIsDownloading(true);
+
+  try {
+    // ✅ Save invoice first
+    const savedInvoice = await handleSubmit();
+
+    // ✅ Update invoice number if backend returned it
     if (savedInvoice.invoice?.invoiceNumber) {
       setInvoiceNumber(savedInvoice.invoice.invoiceNumber);
     }
 
-    // Generate PDF
+    // ✅ Generate PDF & navigate
     requestAnimationFrame(() => {
       toPDF();
-      navigate('/thankyou');
+      setTimeout(() => {
+        setIsDownloading(false); // ✅ Reset after short delay
+        navigate("/thankyou");
+      }, 1000); // adjust timing if necessary
+    });
+  } catch (error) {
+    console.error("Error in download process:", error);
+
+    Swal.fire({
+      title: "❌ Failed to Generate Invoice",
+      text: "Something went wrong during the download process. Please try again.",
+      icon: "error",
+      confirmButtonText: "OK",
+      confirmButtonColor: "#d33",
     });
 
-  } catch (error) {
-  console.error("Error in download process:", error);
-
-  Swal.fire({
-    title: '❌ Failed to Generate Invoice',
-    text: 'Something went wrong during the download process. Please try again.',
-    icon: 'error',
-    confirmButtonText: 'OK',
-    confirmButtonColor: '#d33'
-  });
-}
-
-};
-
-const handleSaveDefault = async () => {
- if (!invoiceNumber) {
-  Swal.fire({
-    title: '⚠️ Missing Invoice Number',
-    text: 'Please enter an invoice number before continuing.',
-    icon: 'warning',
-    confirmButtonText: 'OK',
-    confirmButtonColor: '#f0ad4e'
-  });
-  return;
-}
-
-
-  const confirmUpdate = window.confirm(
-    "Do you want to make this invoice the default template, overwriting the current one?"
-  );
-
-  if (!confirmUpdate) return;
-
-  try {
-    // Prepare the updated invoice data
-    const updatedInvoice = {
-      from,
-      billTo,
-      shipTo,
-      date,
-      paymentTerms,
-      dueDate,
-      poNumber,
-      currency: icurrency,
-      amountPaid,
-      lineItems: items.map(item => ({
-        description: item.description,
-        quantity: item.quantity,
-        rate: item.price,
-        amount: item.amount
-      })),
-      notes,
-      terms,
-      invoiceNumber,
-      shipping: shippingAmount,
-      taxRate,
-      taxAmount,
-      discountPercentage,
-      discountFixed,
-      isTaxPercentage,
-      isDiscountPercentage,
-      labels: { ...labels }
-    };
-
-    // Update the invoice in the database
-   const response = await fetch(
-  `https://invoice-generator-backend-liard.vercel.app/invoice/${invoiceNumber}`,
-  {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(updatedInvoice),
-  }
-);
-
-
-    if (!response.ok) throw new Error('Failed to update invoice');
-
-    const result = await response.json();
-   Swal.fire({
-  title: '✅ Invoice Updated!',
-  text: 'Your invoice has been updated successfully.',
-  icon: 'success',
-  confirmButtonText: 'Great!',
-  confirmButtonColor: '#28a745'
-});
-
-    return result;
-  } catch (error) {
-  console.error('Error updating invoice:', error);
-
-  Swal.fire({
-    title: '❌ Failed to Update Invoice',
-    text: 'Something went wrong while updating the invoice. Please try again.',
-    icon: 'error',
-    confirmButtonText: 'OK',
-    confirmButtonColor: '#d33'
-  });
-}
-
-};
-
-const checkInvoiceExists = async (invoiceNumber) => {
-try {
-  const response = await fetch(
-    `https://invoice-generator-backend-liard.vercel.app/invoice/check/${invoiceNumber}`
-  );
-
-  if (!response.ok) throw new Error("Failed to check invoice");
-
-  const data = await response.json();
-  return data.exists;
-
-} catch (error) {
-    console.error('Error checking invoice:', error);
-    return false;
+    setIsDownloading(false); // Ensure we re-enable the button
   }
 };
+
+
+  const handleSaveDefault = async () => {
+    if (!invoiceNumber) {
+      Swal.fire({
+        title: "⚠️ Missing Invoice Number",
+        text: "Please enter an invoice number before continuing.",
+        icon: "warning",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#f0ad4e",
+      });
+      return;
+    }
+
+    const confirmUpdate = window.confirm(
+      "Do you want to make this invoice the default template, overwriting the current one?"
+    );
+
+    if (!confirmUpdate) return;
+
+    try {
+      // Prepare the updated invoice data
+      const updatedInvoice = {
+        from,
+        billTo,
+        shipTo,
+        date,
+        paymentTerms,
+        dueDate,
+        poNumber,
+        currency: icurrency,
+        amountPaid,
+        lineItems: items.map((item) => ({
+          description: item.description,
+          quantity: item.quantity,
+          rate: item.price,
+          amount: item.amount,
+        })),
+        notes,
+        terms,
+        invoiceNumber,
+        shipping: shippingAmount,
+        taxRate,
+        taxAmount,
+        discountPercentage,
+        discountFixed,
+        isTaxPercentage,
+        isDiscountPercentage,
+        labels: { ...labels },
+      };
+
+      // Update the invoice in the database
+      const response = await fetch(
+        `https://invoice-generator-backend-liard.vercel.app/invoice/${invoiceNumber}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(updatedInvoice),
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to update invoice");
+
+      const result = await response.json();
+      Swal.fire({
+        title: "✅ Invoice Updated!",
+        text: "Your invoice has been updated successfully.",
+        icon: "success",
+        confirmButtonText: "Great!",
+        confirmButtonColor: "#28a745",
+      });
+
+      return result;
+    } catch (error) {
+      console.error("Error updating invoice:", error);
+
+      Swal.fire({
+        title: "❌ Failed to Update Invoice",
+        text: "Something went wrong while updating the invoice. Please try again.",
+        icon: "error",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#d33",
+      });
+    }
+  };
+
+  const checkInvoiceExists = async (invoiceNumber) => {
+    try {
+      const response = await fetch(
+        `https://invoice-generator-backend-liard.vercel.app/invoice/check/${invoiceNumber}`
+      );
+
+      if (!response.ok) throw new Error("Failed to check invoice");
+
+      const data = await response.json();
+      return data.exists;
+    } catch (error) {
+      console.error("Error checking invoice:", error);
+      return false;
+    }
+  };
 
   // Invoice PDF template
   const InvoicePDFTemplate = () => (
@@ -567,7 +578,9 @@ try {
 
         {/* Invoice Info */}
         <div className="text-right">
-          <h1 className="text-3xl font-semibold tracking-wide mb-1">{invoiceType}</h1>
+          <h1 className="text-3xl font-semibold tracking-wide mb-1">
+            {invoiceType}
+          </h1>
 
           <p className="text-sm text-gray-500">
             # {invoiceNumber || "Pending"}
@@ -798,7 +811,9 @@ try {
 
       {/* Invoice Section */}
       <div
-        className={`max-w-7xl mx-auto mt-10 border rounded-lg p-6 flex flex-col lg:flex-row transition-colors duration-300 ${
+        className={`max-w-7xl mx-auto ${
+          isVisible ? "mt-10" : "mt-0"
+        } border rounded-lg p-6 flex flex-col lg:flex-row transition-all duration-300 ${
           darkMode
             ? "bg-gray-800 border-gray-700"
             : "bg-gray-50 border-gray-200"
@@ -972,155 +987,155 @@ try {
         </div>
 
         {/* Middle section */}
-       <div className="flex-1 mt-10 lg:mt-0 lg:px-8">
-  <h2
-    className={`text-2xl font-semibold text-right pr-24 mb-2 ${
-      darkMode ? "text-white" : "text-gray-900"
-    }`}
-  >
-   Purchase Order
-  </h2>
+        <div className="flex-1 mt-10 lg:mt-0 lg:px-8">
+          <h2
+            className={`text-2xl font-semibold text-right pr-24 mb-2 ${
+              darkMode ? "text-white" : "text-gray-900"
+            }`}
+          >
+            Purchase Order
+          </h2>
 
-  <div className="space-y-6">
-    {/* Invoice Number */}
-    <div className="flex flex-col sm:flex-row sm:items-center w-full sm:w-[80%] ml-auto gap-2 sm:gap-x-4">
-      <label
-        className={`w-full sm:w-32 text-sm font-medium ${
-          darkMode ? "text-white" : "text-gray-800"
-        }`}
-      >
-        #
-      </label>
+          <div className="space-y-6">
+            {/* Invoice Number */}
+            <div className="flex flex-col sm:flex-row sm:items-center w-full sm:w-[80%] ml-auto gap-2 sm:gap-x-4">
+              <label
+                className={`w-full sm:w-32 text-sm font-medium ${
+                  darkMode ? "text-white" : "text-gray-800"
+                }`}
+              >
+                #
+              </label>
 
-      <input
-        placeholder="#"
-        value={invoiceNumber}
-        onChange={(e) => setInvoiceNumber(e.target.value)}
-        className={`w-full sm:flex-1 border rounded px-3 py-2 transition-colors duration-300 
+              <input
+                placeholder="#"
+                value={invoiceNumber}
+                onChange={(e) => setInvoiceNumber(e.target.value)}
+                className={`w-full sm:flex-1 border rounded px-3 py-2 transition-colors duration-300 
           ${
             darkMode
               ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500"
               : "bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-blue-500"
           }`}
-      />
-    </div>
+              />
+            </div>
 
-{/* Date Field */}
-<div className="flex flex-col sm:flex-row sm:items-center w-full sm:w-[80%] ml-auto gap-2 sm:gap-x-4">
-  <div className="flex items-center">
-    {isEditingLabel === "date" ? (
-      <div className="flex items-center w-full sm:w-32">
-        <input
-          type="text"
-          value={tempLabelValue}
-          onChange={(e) => setTempLabelValue(e.target.value)}
-          className={`border rounded px-2 py-1 w-full mr-2 ${
-            darkMode
-              ? "bg-gray-700 border-gray-600 text-white"
-              : "bg-white border-gray-300 text-gray-900"
-          }`}
-        />
-        <button
-          onClick={saveLabel}
-          className={`text-xs mr-1 ${
-            darkMode ? "text-green-400" : "text-green-600"
-          }`}
-        >
-          ✓
-        </button>
-        <button
-          onClick={cancelEditingLabel}
-          className={`text-xs ${
-            darkMode ? "text-red-400" : "text-red-500"
-          }`}
-        >
-          ×
-        </button>
-      </div>
-    ) : (
-      <label
-        className={`w-full sm:w-32 text-sm font-medium ${
-          darkMode ? "text-white" : "text-gray-800"
-        } cursor-pointer`}
-        onClick={() => startEditingLabel("date")}
-      >
-        {labels.date}
-      </label>
-    )}
-  </div>
+            {/* Date Field */}
+            <div className="flex flex-col sm:flex-row sm:items-center w-full sm:w-[80%] ml-auto gap-2 sm:gap-x-4">
+              <div className="flex items-center">
+                {isEditingLabel === "date" ? (
+                  <div className="flex items-center w-full sm:w-32">
+                    <input
+                      type="text"
+                      value={tempLabelValue}
+                      onChange={(e) => setTempLabelValue(e.target.value)}
+                      className={`border rounded px-2 py-1 w-full mr-2 ${
+                        darkMode
+                          ? "bg-gray-700 border-gray-600 text-white"
+                          : "bg-white border-gray-300 text-gray-900"
+                      }`}
+                    />
+                    <button
+                      onClick={saveLabel}
+                      className={`text-xs mr-1 ${
+                        darkMode ? "text-green-400" : "text-green-600"
+                      }`}
+                    >
+                      ✓
+                    </button>
+                    <button
+                      onClick={cancelEditingLabel}
+                      className={`text-xs ${
+                        darkMode ? "text-red-400" : "text-red-500"
+                      }`}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ) : (
+                  <label
+                    className={`w-full sm:w-32 text-sm font-medium ${
+                      darkMode ? "text-white" : "text-gray-800"
+                    } cursor-pointer`}
+                    onClick={() => startEditingLabel("date")}
+                  >
+                    {labels.date}
+                  </label>
+                )}
+              </div>
 
-  {/* Date input with dark mode calendar icon fix */}
-  <input
-    type="date"
-    value={date}
-    onChange={(e) => setDate(e.target.value)}
-    className={`w-full sm:flex-1 border rounded px-3 py-2 transition-colors duration-300 
+              {/* Date input with dark mode calendar icon fix */}
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className={`w-full sm:flex-1 border rounded px-3 py-2 transition-colors duration-300 
       ${
         darkMode
           ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 dark-calendar-icon"
           : "bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-blue-500"
       }`}
-  />
-</div>
+              />
+            </div>
 
-    {/* Payment Terms */}
-    <div className="flex flex-col sm:flex-row sm:items-center w-full sm:w-[80%] ml-auto gap-2 sm:gap-x-4">
-      <div className="flex items-center">
-        {isEditingLabel === "paymentTerms" ? (
-          <div className="flex items-center w-full sm:w-32">
-            <input
-              type="text"
-              value={tempLabelValue}
-              onChange={(e) => setTempLabelValue(e.target.value)}
-              className={`border rounded px-2 py-1 w-full mr-2 ${
-                darkMode
-                  ? "bg-gray-700 border-gray-600 text-white"
-                  : "bg-white border-gray-300 text-gray-900"
-              }`}
-            />
-            <button
-              onClick={saveLabel}
-              className={`text-xs mr-1 ${
-                darkMode ? "text-green-400" : "text-green-600"
-              }`}
-            >
-              ✓
-            </button>
-            <button
-              onClick={cancelEditingLabel}
-              className={`text-xs ${
-                darkMode ? "text-red-400" : "text-red-500"
-              }`}
-            >
-              ×
-            </button>
-          </div>
-        ) : (
-          <label
-            className={`w-full sm:w-32 text-sm font-medium ${
-              darkMode ? "text-white" : "text-gray-800"
-            } cursor-pointer`}
-            onClick={() => startEditingLabel("paymentTerms")}
-          >
-            {labels.paymentTerms}
-          </label>
-        )}
-      </div>
+            {/* Payment Terms */}
+            <div className="flex flex-col sm:flex-row sm:items-center w-full sm:w-[80%] ml-auto gap-2 sm:gap-x-4">
+              <div className="flex items-center">
+                {isEditingLabel === "paymentTerms" ? (
+                  <div className="flex items-center w-full sm:w-32">
+                    <input
+                      type="text"
+                      value={tempLabelValue}
+                      onChange={(e) => setTempLabelValue(e.target.value)}
+                      className={`border rounded px-2 py-1 w-full mr-2 ${
+                        darkMode
+                          ? "bg-gray-700 border-gray-600 text-white"
+                          : "bg-white border-gray-300 text-gray-900"
+                      }`}
+                    />
+                    <button
+                      onClick={saveLabel}
+                      className={`text-xs mr-1 ${
+                        darkMode ? "text-green-400" : "text-green-600"
+                      }`}
+                    >
+                      ✓
+                    </button>
+                    <button
+                      onClick={cancelEditingLabel}
+                      className={`text-xs ${
+                        darkMode ? "text-red-400" : "text-red-500"
+                      }`}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ) : (
+                  <label
+                    className={`w-full sm:w-32 text-sm font-medium ${
+                      darkMode ? "text-white" : "text-gray-800"
+                    } cursor-pointer`}
+                    onClick={() => startEditingLabel("paymentTerms")}
+                  >
+                    {labels.paymentTerms}
+                  </label>
+                )}
+              </div>
 
-      <input
-        placeholder="Payment Terms"
-        value={paymentTerms}
-        onChange={(e) => setPaymentTerms(e.target.value)}
-        className={`w-full sm:flex-1 border rounded px-3 py-2 transition-colors duration-300 
+              <input
+                placeholder="Payment Terms"
+                value={paymentTerms}
+                onChange={(e) => setPaymentTerms(e.target.value)}
+                className={`w-full sm:flex-1 border rounded px-3 py-2 transition-colors duration-300 
           ${
             darkMode
               ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500"
               : "bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-blue-500"
           }`}
-      />
-    </div>
+              />
+            </div>
 
-    {/* Due Date
+            {/* Due Date
 <div className="flex flex-col sm:flex-row sm:items-center w-full sm:w-[80%] ml-auto gap-2 sm:gap-x-4">
   <div className="flex items-center">
     {isEditingLabel === "dueDate" ? (
@@ -1164,8 +1179,8 @@ try {
     )}
   </div> */}
 
-  {/* Always type="date" for mobile compatibility */}
-  {/* <input
+            {/* Always type="date" for mobile compatibility */}
+            {/* <input
     type="date"
     value={dueDate}
     onChange={(e) => setDueDate(e.target.value)}
@@ -1178,7 +1193,7 @@ try {
   />
 </div> */}
 
-    {/* PO Number
+            {/* PO Number
     <div className="flex flex-col sm:flex-row sm:items-center w-full sm:w-[80%] ml-auto gap-2 sm:gap-x-4">
       <div className="flex items-center">
         {isEditingLabel === "poNumber" ? (
@@ -1234,21 +1249,53 @@ try {
           }`}
       />
     </div> */}
-  </div>
-</div>
+          </div>
+        </div>
 
         {/* Right section */}
         <div className="lg:w-48 mt-10 lg:mt-0 space-y-4 pt-20">
-          <button
-            onClick={handleDownloadClick} // Only call handleDownloadClick, it handles everything
-            className={`mt-6 w-full py-2 rounded transition-colors duration-300 ${
-              darkMode
-                ? "bg-emerald-700 hover:bg-emerald-600 text-white"
-                : "bg-emerald-600 hover:bg-emerald-700 text-white"
-            }`}
-          >
-            Download Invoice
-          </button>
+         <button
+  onClick={handleDownloadClick}
+  disabled={isDownloading}
+  className={`mt-6 w-full py-2 rounded flex justify-center items-center transition-colors duration-300 ${
+    darkMode
+      ? isDownloading
+        ? "bg-emerald-800 text-white cursor-not-allowed"
+        : "bg-emerald-700 hover:bg-emerald-600 text-white"
+      : isDownloading
+        ? "bg-emerald-500 text-white cursor-not-allowed"
+        : "bg-emerald-600 hover:bg-emerald-700 text-white"
+  }`}
+>
+  {isDownloading ? (
+    <>
+      <svg
+        className="animate-spin h-5 w-5 mr-2 text-white"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <circle
+          className="opacity-25"
+          cx="12"
+          cy="12"
+          r="10"
+          stroke="currentColor"
+          strokeWidth="4"
+        />
+        <path
+          className="opacity-75"
+          fill="currentColor"
+          d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"
+        />
+      </svg>
+      Preparing PDF...
+    </>
+  ) : (
+    "Download Invoice"
+  )}
+</button>
+
 
           <div>
             <label
@@ -1291,15 +1338,15 @@ try {
             </select>
           </div>
 
-         <p
-  onClick={handleSaveDefault}
-  className={`text-sm cursor-pointer hover:underline ${
-    darkMode ? "text-green-400" : "text-green-600"
-  }`}
->
-  Save Default
-</p>
-        </div>  
+          <p
+            onClick={handleSaveDefault}
+            className={`text-sm cursor-pointer hover:underline ${
+              darkMode ? "text-green-400" : "text-green-600"
+            }`}
+          >
+            Save Default
+          </p>
+        </div>
       </div>
 
       {/* Item Table */}

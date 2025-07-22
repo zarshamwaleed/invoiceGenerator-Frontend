@@ -1,34 +1,35 @@
 // src/components/HomePage.js
 import React, { useState, useRef, useContext, useEffect } from "react";
-import Swal from 'sweetalert2';
-
+import Swal from "sweetalert2";
+import Cookies from 'js-cookie';
 import Footer from "./Footer";
 import { ThemeContext } from "../context/ThemeContext";
 import { useNavigate } from "react-router-dom";
 import { usePDF } from "react-to-pdf";
 import { InvoiceContext } from "../context/InvoiceContext";
- import { useLocation } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
 export default function HomePage() {
   const { darkMode } = useContext(ThemeContext);
-  
+
   const navigate = useNavigate();
-  
-const { invoiceData, setInvoiceData, hardReset } = useContext(InvoiceContext);
- 
 
-const location = useLocation();
+  const { invoiceData, setInvoiceData, hardReset } = useContext(InvoiceContext);
 
-// Helper to map pathname to invoice type
-const getInvoiceType = (path) => {
-  if (path === '/') return 'INVOICE';
-  if (path.includes('credit-note')) return 'CREDIT NOTE';
-  if (path.includes('quote')) return 'QUOTE';
-  if (path.includes('purchase-order')) return 'PURCHASE ORDER';
-  return 'INVOICE';
-};
+  const location = useLocation();
 
-const invoiceType = getInvoiceType(location.pathname);
+  const [isDownloading, setIsDownloading] = useState(false);
 
+
+  // Helper to map pathname to invoice type
+  const getInvoiceType = (path) => {
+    if (path === "/") return "INVOICE";
+    if (path.includes("credit-note")) return "CREDIT NOTE";
+    if (path.includes("quote")) return "QUOTE";
+    if (path.includes("purchase-order")) return "PURCHASE ORDER";
+    return "INVOICE";
+  };
+
+  const invoiceType = getInvoiceType(location.pathname);
 
   // UI States
   const [isVisible, setIsVisible] = useState(true);
@@ -52,7 +53,7 @@ const invoiceType = getInvoiceType(location.pathname);
   const [isDiscountPercentage, setIsDiscountPercentage] = useState(
     invoiceData.isDiscountPercentage || false
   );
-  
+
   const [taxAmount, setTaxAmount] = useState(invoiceData.taxAmount || 0);
   const [discountRate, setDiscountRate] = useState(0);
   const [discountPercentage, setDiscountPercentage] = useState(
@@ -154,15 +155,23 @@ const invoiceType = getInvoiceType(location.pathname);
   const [isEditingLabel, setIsEditingLabel] = useState(null);
   const [tempLabelValue, setTempLabelValue] = useState("");
 
-// Force reset when component mounts
+
   useEffect(() => {
-    const shouldReset = sessionStorage.getItem('shouldReset');
+  const dismissed = Cookies.get('welcomeDismissed');
+  if (dismissed === 'true') {
+    setIsVisible(false);
+  }
+}, []);
+
+  // Force reset when component mounts
+  useEffect(() => {
+    const shouldReset = sessionStorage.getItem("shouldReset");
     if (shouldReset) {
       hardReset();
-      sessionStorage.removeItem('shouldReset');
+      sessionStorage.removeItem("shouldReset");
     }
   }, []);
-  
+
   // Calculate amounts whenever items change
   useEffect(() => {
     if (Array.isArray(items)) {
@@ -185,9 +194,11 @@ const invoiceType = getInvoiceType(location.pathname);
     setiAmountPaid(amountPaid);
   }, [amountPaid]);
 
-  const handleHide = () => {
-    setIsVisible(false);
-  };
+ const handleHide = () => {
+  setIsVisible(false);
+  Cookies.set('welcomeDismissed', 'true', { expires: 7 }); // Expires in 30 days
+};
+
 
   const addItem = () => {
     const newId =
@@ -256,34 +267,33 @@ const invoiceType = getInvoiceType(location.pathname);
     }
   };
 
- // Store currency code → symbol mapping
-const currencySymbols = {
-  USD: "$",
-  EUR: "€",
-  GBP: "£",
-  JPY: "¥",
-  CNY: "¥",
-  AUD: "A$",
-  CAD: "C$",
-  CHF: "CHF",
-  INR: "₹",
-  PKR: "₨",
-  ZAR: "R",
-  SEK: "kr",
-  NOK: "kr",
-  DKK: "kr",
-  RUB: "₽",
-  SGD: "S$",
-  HKD: "HK$",
-  NZD: "NZ$",
-  THB: "฿",
-  MYR: "RM",
-  SAR: "﷼",
-};
+  // Store currency code → symbol mapping
+  const currencySymbols = {
+    USD: "$",
+    EUR: "€",
+    GBP: "£",
+    JPY: "¥",
+    CNY: "¥",
+    AUD: "A$",
+    CAD: "C$",
+    CHF: "CHF",
+    INR: "₹",
+    PKR: "₨",
+    ZAR: "R",
+    SEK: "kr",
+    NOK: "kr",
+    DKK: "kr",
+    RUB: "₽",
+    SGD: "S$",
+    HKD: "HK$",
+    NZD: "NZ$",
+    THB: "฿",
+    MYR: "RM",
+    SAR: "﷼",
+  };
 
-// This returns the correct symbol for the currently selected currency
-const getCurrencySymbol = () => currencySymbols[icurrency] || "$";
-
+  // This returns the correct symbol for the currently selected currency
+  const getCurrencySymbol = () => currencySymbols[icurrency] || "$";
 
   const calculateSubtotal = () => {
     return items.reduce((sum, item) => sum + item.amount, 0);
@@ -346,101 +356,102 @@ const getCurrencySymbol = () => currencySymbols[icurrency] || "$";
   });
 
   // Update the handleSubmit function to update context and save to backend
-const handleSubmit = async () => {
-  // ✅ Get logged-in user (if any)
-  const user = JSON.parse(localStorage.getItem("user"));
-  
-  // ✅ Only send real userId if logged in, otherwise null
-  const userId = user?.id || null;
+  const handleSubmit = async () => {
+    // ✅ Get logged-in user (if any)
+    const user = JSON.parse(localStorage.getItem("user"));
 
-  // ✅ Always include visitorId (guest tracking)
-  const visitorId = localStorage.getItem("visitorId");
+    // ✅ Only send real userId if logged in, otherwise null
+    const userId = user?.id || null;
 
-  // ✅ Calculate all amounts
-  const subtotal = calculateSubtotal();
-  const tax = calculateTaxAmount();
-  const discount = calculateDiscountAmount();
-  const total = calculateTotal();
-  const balanceDue = calculateBalanceDue();
+    // ✅ Always include visitorId (guest tracking)
+    const visitorId = localStorage.getItem("visitorId");
 
-  // ✅ Build invoice payload
-  const invoiceDataToSave = {
-    userId,      // ✅ logged-in userId if valid, else null
-    visitorId,   // ✅ always set
-    type: invoiceType,
-    logo: ilogo,
-    from,
-    billTo,
-    shipTo,
-    date: date || new Date().toISOString().split("T")[0],
-    paymentTerms,
-    dueDate,
-    poNumber,
-    currency: icurrency,
-    subtotal,
-    tax,
-    discount,
-    shipping: shippingAmount,
-    total,
-    amountPaid,
-    balanceDue,
-    notes,
-    terms,
-    invoiceNumber: invoiceNumber || `INV-${Date.now()}`,
-    lineItems: items.map((item) => ({
-      description: item.description,
-      quantity: item.quantity,
-      rate: item.price,
-      amount: item.amount,
-    })),
-    labels: {
-      ...labels,
-      from: labels.from || "From",
-      billTo: labels.billTo || "Bill To",
-      shipTo: labels.shipTo || "Ship To",
-      paymentTerms: labels.paymentTerms || "Payment Terms",
-      dueDate: labels.dueDate || "Due Date",
-      poNumber: labels.poNumber || "PO Number",
-      currency: labels.currency || "Currency",
-    },
+    // ✅ Calculate all amounts
+    const subtotal = calculateSubtotal();
+    const tax = calculateTaxAmount();
+    const discount = calculateDiscountAmount();
+    const total = calculateTotal();
+    const balanceDue = calculateBalanceDue();
+
+    // ✅ Build invoice payload
+    const invoiceDataToSave = {
+      userId, // ✅ logged-in userId if valid, else null
+      visitorId, // ✅ always set
+      type: invoiceType,
+      logo: ilogo,
+      from,
+      billTo,
+      shipTo,
+      date: date || new Date().toISOString().split("T")[0],
+      paymentTerms,
+      dueDate,
+      poNumber,
+      currency: icurrency,
+      subtotal,
+      tax,
+      discount,
+      shipping: shippingAmount,
+      total,
+      amountPaid,
+      balanceDue,
+      notes,
+      terms,
+      invoiceNumber: invoiceNumber || `INV-${Date.now()}`,
+      lineItems: items.map((item) => ({
+        description: item.description,
+        quantity: item.quantity,
+        rate: item.price,
+        amount: item.amount,
+      })),
+      labels: {
+        ...labels,
+        from: labels.from || "From",
+        billTo: labels.billTo || "Bill To",
+        shipTo: labels.shipTo || "Ship To",
+        paymentTerms: labels.paymentTerms || "Payment Terms",
+        dueDate: labels.dueDate || "Due Date",
+        poNumber: labels.poNumber || "PO Number",
+        currency: labels.currency || "Currency",
+      },
+    };
+
+    // ✅ Save in state for PDF generation
+    setInvoiceData(invoiceDataToSave);
+
+    try {
+      const response = await fetch(
+        "https://invoice-generator-backend-liard.vercel.app/invoice",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(invoiceDataToSave),
+          credentials: "include", // Only if you're using cookies/auth
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to save invoice");
+      }
+
+      const result = await response.json();
+      console.log("✅ Invoice saved:", result);
+      return result;
+    } catch (error) {
+      console.error("❌ Error saving invoice:", error.message);
+      throw error;
+    }
   };
 
-  // ✅ Save in state for PDF generation
-  setInvoiceData(invoiceDataToSave);
-
-  try {
-  const response = await fetch(
-    "https://invoice-generator-backend-liard.vercel.app/invoice",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(invoiceDataToSave),
-      credentials: 'include' // Only if you're using cookies/auth
-    }
-  );
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || "Failed to save invoice");
-  }
-
-  const result = await response.json();
-  console.log("✅ Invoice saved:", result);
-  return result;
-} catch (error) {
-  console.error("❌ Error saving invoice:", error.message);
-  throw error;
-}
-};
-
-
-
-
   // Update the download handler
-const handleDownloadClick = async (e) => {
+  const handleDownloadClick = async (e) => {
   e.preventDefault();
+
+  if (isDownloading) return; // Prevent multiple clicks
+
+  setIsDownloading(true);
 
   try {
     // ✅ Save invoice first
@@ -451,134 +462,138 @@ const handleDownloadClick = async (e) => {
       setInvoiceNumber(savedInvoice.invoice.invoiceNumber);
     }
 
-    // ✅ Now generate PDF & navigate
+    // ✅ Generate PDF & navigate
     requestAnimationFrame(() => {
-      toPDF(); 
-      navigate('/thankyou');
+      toPDF();
+      setTimeout(() => {
+        setIsDownloading(false); // ✅ Reset after short delay
+        navigate("/thankyou");
+      }, 1000); // adjust timing if necessary
     });
-
   } catch (error) {
     console.error("Error in download process:", error);
 
     Swal.fire({
-      title: '❌ Failed to Generate Invoice',
-      text: 'Something went wrong during the download process. Please try again.',
-      icon: 'error',
-      confirmButtonText: 'OK',
-      confirmButtonColor: '#d33'
+      title: "❌ Failed to Generate Invoice",
+      text: "Something went wrong during the download process. Please try again.",
+      icon: "error",
+      confirmButtonText: "OK",
+      confirmButtonColor: "#d33",
     });
+
+    setIsDownloading(false); // Ensure we re-enable the button
   }
 };
 
 
-const handleSaveDefault = async () => {
- if (!invoiceNumber) {
-  Swal.fire({
-    title: '⚠️ Missing Invoice Number',
-    text: 'Please enter an invoice number before continuing.',
-    icon: 'warning',
-    confirmButtonText: 'OK',
-    confirmButtonColor: '#f0ad4e'
-  });
-  return;
-}
+  const handleSaveDefault = async () => {
+    if (!invoiceNumber) {
+      Swal.fire({
+        title: "⚠️ Missing Invoice Number",
+        text: "Please enter an invoice number before continuing.",
+        icon: "warning",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#f0ad4e",
+      });
+      return;
+    }
 
-const confirmUpdate = await Swal.fire({
-  title: "Overwrite Default Template?",
-  text: "Do you want to make this invoice the default template, overwriting the current one?",
-  icon: "question",
-  showCancelButton: true,
-  confirmButtonText: "✅ Yes, overwrite",
-  cancelButtonText: "❌ No, keep current",
-  confirmButtonColor: "#3085d6",
-  cancelButtonColor: "#d33",
-});
+    const confirmUpdate = await Swal.fire({
+      title: "Overwrite Default Template?",
+      text: "Do you want to make this invoice the default template, overwriting the current one?",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "✅ Yes, overwrite",
+      cancelButtonText: "❌ No, keep current",
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+    });
 
-// Only proceed if user confirms
-if (!confirmUpdate.isConfirmed) return;
+    // Only proceed if user confirms
+    if (!confirmUpdate.isConfirmed) return;
 
-  try {
-    // Prepare the updated invoice data
-    const updatedInvoice = {
-      from,
-      billTo,
-      shipTo,
-      date,
-      paymentTerms,
-      dueDate,
-      poNumber,
-      currency: icurrency,
-      amountPaid,
-      lineItems: items.map(item => ({
-        description: item.description,
-        quantity: item.quantity,
-        rate: item.price,
-        amount: item.amount
-      })),
-      notes,
-      terms,
-      invoiceNumber,
-      shipping: shippingAmount,
-      taxRate,
-      taxAmount,
-      discountPercentage,
-      discountFixed,
-      isTaxPercentage,
-      isDiscountPercentage,
-      labels: { ...labels }
-    };
+    try {
+      // Prepare the updated invoice data
+      const updatedInvoice = {
+        from,
+        billTo,
+        shipTo,
+        date,
+        paymentTerms,
+        dueDate,
+        poNumber,
+        currency: icurrency,
+        amountPaid,
+        lineItems: items.map((item) => ({
+          description: item.description,
+          quantity: item.quantity,
+          rate: item.price,
+          amount: item.amount,
+        })),
+        notes,
+        terms,
+        invoiceNumber,
+        shipping: shippingAmount,
+        taxRate,
+        taxAmount,
+        discountPercentage,
+        discountFixed,
+        isTaxPercentage,
+        isDiscountPercentage,
+        labels: { ...labels },
+      };
 
-    // Update the invoice in the database
-   const response = await fetch(
-  `https://invoice-generator-backend-liard.vercel.app/invoice/${invoiceNumber}`,
-  {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(updatedInvoice),
-  }
-);
+      // Update the invoice in the database
+      const response = await fetch(
+        `https://invoice-generator-backend-liard.vercel.app/invoice/${invoiceNumber}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(updatedInvoice),
+        }
+      );
 
+      if (!response.ok) throw new Error("Failed to update invoice");
 
-    if (!response.ok) throw new Error('Failed to update invoice');
+      const result = await response.json();
+      Swal.fire({
+        title: "✅ Invoice Updated!",
+        text: "Your invoice has been updated successfully.",
+        icon: "success",
+        confirmButtonText: "Great!",
+        confirmButtonColor: "#28a745",
+      });
 
-    const result = await response.json();
- Swal.fire({
-  title: '✅ Invoice Updated!',
-  text: 'Your invoice has been updated successfully.',
-  icon: 'success',
-  confirmButtonText: 'Great!',
-  confirmButtonColor: '#28a745'
-});
+      return result;
+    } catch (error) {
+      console.error("Error updating invoice:", error);
 
-    return result;
-  } catch (error) {
-  console.error('Error updating invoice:', error);
+      Swal.fire({
+        title: "❌ Failed to Update Invoice",
+        text: "Something went wrong while updating the invoice. Please try again.",
+        icon: "error",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#d33",
+      });
+    }
+  };
 
-  Swal.fire({
-    title: '❌ Failed to Update Invoice',
-    text: 'Something went wrong while updating the invoice. Please try again.',
-    icon: 'error',
-    confirmButtonText: 'OK',
-    confirmButtonColor: '#d33'
-  });
-}
+  const checkInvoiceExists = async (invoiceNumber) => {
+    try {
+      const response = await fetch(
+        `https://invoice-generator-backend-liard.vercel.app/invoice/check/${invoiceNumber}`
+      );
 
-};
-
-const checkInvoiceExists = async (invoiceNumber) => {
-  try {
-    const response = await fetch(`https://invoice-generator-backend-liard.vercel.app/invoice/check/${invoiceNumber}`);
-
-    if (!response.ok) throw new Error('Failed to check invoice');
-    const data = await response.json();
-    return data.exists;
-  } catch (error) {
-    console.error('Error checking invoice:', error);
-    return false;
-  }
-};
+      if (!response.ok) throw new Error("Failed to check invoice");
+      const data = await response.json();
+      return data.exists;
+    } catch (error) {
+      console.error("Error checking invoice:", error);
+      return false;
+    }
+  };
 
   // Invoice PDF template
   const InvoicePDFTemplate = () => (
@@ -597,7 +612,9 @@ const checkInvoiceExists = async (invoiceNumber) => {
 
         {/* Invoice Info */}
         <div className="text-right">
-          <h1 className="text-3xl font-semibold tracking-wide mb-1">{invoiceType}</h1>
+          <h1 className="text-3xl font-semibold tracking-wide mb-1">
+            {invoiceType}
+          </h1>
 
           <p className="text-sm text-gray-500">
             # {invoiceNumber || "Pending"}
@@ -775,66 +792,61 @@ const checkInvoiceExists = async (invoiceNumber) => {
   };
 
   return (
+ <div
+  key={isVisible ? "with-header" : "no-header"} // ✅ Forces repaint
+  className={`min-h-screen transition-colors duration-300 ${
+    darkMode ? "bg-gray-900 text-gray-100" : "bg-white text-gray-900"
+  }`}
+>
+  {/* Hidden PDF template */}
+  <div style={{ position: "absolute", top: "-9999px", left: "-9999px" }}>
+    <InvoicePDFTemplate />
+  </div>
+
+  {/* Header Section */}
+  {isVisible && (
     <div
-      className={`min-h-screen transition-colors duration-300 ${
-        darkMode ? "bg-gray-900 text-gray-100" : "bg-white text-gray-900"
-      }`}
+      className={`max-w-7xl mx-auto p-6 rounded-lg ${
+        darkMode ? "bg-gray-800" : "bg-gray-50"
+      } transition-colors duration-300`}
     >
-      {/* Hidden PDF template */}
-      <div style={{ position: "absolute", top: "-9999px", left: "-9999px" }}>
-        <InvoicePDFTemplate />
-      </div>
-
-      {/* Header Section */}
-      {isVisible && (
-        <div
-          className={`max-w-7xl mx-auto p-6 rounded-lg ${
-            darkMode ? "bg-gray-800" : "bg-gray-50"
-          } transition-colors duration-300`}
-        >
-          <h1
-            className={`text-3xl font-bold mb-2 ${
-              darkMode ? "text-white" : "text-gray-900"
-            }`}
-          >
-            Free Invoice Template
-          </h1>
-          <h2
-            className={`text-xl font-semibold mb-4 ${
-              darkMode ? "text-gray-300" : "text-gray-700"
-            }`}
-          >
-            Make beautiful Invoices with one click!
-          </h2>
-          <p className={`mb-2 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
-            Welcome to the original Invoice Generator, trusted by millions of
-            people. Invoice Generator lets you instantly make Invoices with our
-            attractive invoice template straight from your web browser.
-          </p>
-          <p className={`mb-6 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
-            Did we also mention that Invoice Generator lets you generate an
-            unlimited number of Invoices?
-          </p>
-          <button
-            className={`px-4 py-2 rounded hover:bg-green-700 transition-colors duration-300 ${
-              darkMode ? "bg-green-600 text-white" : "bg-green-600 text-white"
-            }`}
-            onClick={handleHide}
-          >
-            OK, got it!
-          </button>
-        </div>
-      )}
-
-      {/* Invoice Section */}
-      <div
-        className={`max-w-7xl mx-auto mt-10 border rounded-lg p-6 flex flex-col lg:flex-row transition-colors duration-300 ${
-          darkMode
-            ? "bg-gray-800 border-gray-700"
-            : "bg-gray-50 border-gray-200"
+      <h1 className={`text-3xl font-bold mb-2 ${darkMode ? "text-white" : "text-gray-900"}`}>
+        Free Invoice Template
+      </h1>
+      <h2 className={`text-xl font-semibold mb-4 ${darkMode ? "text-gray-300" : "text-gray-700"}`}>
+        Make beautiful Invoices with one click!
+      </h2>
+      <p className={`mb-2 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
+        Welcome to the original Invoice Generator, trusted by millions of people. Invoice Generator
+        lets you instantly make Invoices with our attractive invoice template straight from your web
+        browser.
+      </p>
+      <p className={`mb-6 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
+        Did we also mention that Invoice Generator lets you generate an unlimited number of Invoices?
+      </p>
+      <button
+        className={`px-4 py-2 rounded hover:bg-green-700 transition-colors duration-300 ${
+          darkMode ? "bg-green-600 text-white" : "bg-green-600 text-white"
         }`}
+        onClick={handleHide}
       >
-        {/* Left section */}
+        OK, got it!
+      </button>
+    </div>
+  )}
+
+  {/* Invoice Section */}
+<div
+  className={`max-w-7xl mx-auto ${
+    isVisible ? "mt-10" : "mt-0"
+  } border rounded-lg p-6 flex flex-col lg:flex-row transition-all duration-300 ${
+    darkMode ? "bg-gray-800 border-gray-700" : "bg-gray-50 border-gray-200"
+  }`}
+>
+
+
+    {/* Left section… */}
+
         <div className="flex-1 space-y-4">
           <div
             className={`border w-40 h-24 flex items-center justify-center cursor-pointer transition-colors duration-300 relative group ${
@@ -1002,285 +1014,316 @@ const checkInvoiceExists = async (invoiceNumber) => {
         </div>
 
         {/* Middle section */}
-       <div className="flex-1 mt-10 lg:mt-0 lg:px-8">
-  <h2
-    className={`text-2xl font-semibold text-right pr-24 mb-2 ${
-      darkMode ? "text-white" : "text-gray-900"
-    }`}
-  >
-    INVOICE
-  </h2>
-
-  <div className="space-y-6">
-    {/* Invoice Number */}
-    <div className="flex flex-col sm:flex-row sm:items-center w-full sm:w-[80%] ml-auto gap-2 sm:gap-x-4">
-      <label
-        className={`w-full sm:w-32 text-sm font-medium ${
-          darkMode ? "text-white" : "text-gray-800"
-        }`}
-      >
-        #
-      </label>
-
-      <input
-        placeholder="#"
-        value={invoiceNumber}
-        onChange={(e) => setInvoiceNumber(e.target.value)}
-        className={`w-full sm:flex-1 border rounded px-3 py-2 transition-colors duration-300 
-          ${
-            darkMode
-              ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500"
-              : "bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-blue-500"
-          }`}
-      />
-    </div>
-
-{/* Date Field */}
-<div className="flex flex-col sm:flex-row sm:items-center w-full sm:w-[80%] ml-auto gap-2 sm:gap-x-4">
-  <div className="flex items-center">
-    {isEditingLabel === "date" ? (
-      <div className="flex items-center w-full sm:w-32">
-        <input
-          type="text"
-          value={tempLabelValue}
-          onChange={(e) => setTempLabelValue(e.target.value)}
-          className={`border rounded px-2 py-1 w-full mr-2 ${
-            darkMode
-              ? "bg-gray-700 border-gray-600 text-white"
-              : "bg-white border-gray-300 text-gray-900"
-          }`}
-        />
-        <button
-          onClick={saveLabel}
-          className={`text-xs mr-1 ${
-            darkMode ? "text-green-400" : "text-green-600"
-          }`}
-        >
-          ✓
-        </button>
-        <button
-          onClick={cancelEditingLabel}
-          className={`text-xs ${
-            darkMode ? "text-red-400" : "text-red-500"
-          }`}
-        >
-          ×
-        </button>
-      </div>
-    ) : (
-      <label
-        className={`w-full sm:w-32 text-sm font-medium ${
-          darkMode ? "text-white" : "text-gray-800"
-        } cursor-pointer`}
-        onClick={() => startEditingLabel("date")}
-      >
-        {labels.date}
-      </label>
-    )}
-  </div>
-
-  {/* Date input with fixed width */}
-  <div className="w-full sm:flex-1">
-    <input
-      type="date"
-      value={date}
-      onChange={(e) => setDate(e.target.value)}
-      className={`w-full border rounded px-3 py-2 transition-colors duration-300 ${
-        darkMode
-          ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 dark-calendar-icon"
-          : "bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-blue-500"
-      }`}
-    />
-  </div>
-</div>
-    {/* Payment Terms */}
-    <div className="flex flex-col sm:flex-row sm:items-center w-full sm:w-[80%] ml-auto gap-2 sm:gap-x-4">
-      <div className="flex items-center">
-        {isEditingLabel === "paymentTerms" ? (
-          <div className="flex items-center w-full sm:w-32">
-            <input
-              type="text"
-              value={tempLabelValue}
-              onChange={(e) => setTempLabelValue(e.target.value)}
-              className={`border rounded px-2 py-1 w-full mr-2 ${
-                darkMode
-                  ? "bg-gray-700 border-gray-600 text-white"
-                  : "bg-white border-gray-300 text-gray-900"
-              }`}
-            />
-            <button
-              onClick={saveLabel}
-              className={`text-xs mr-1 ${
-                darkMode ? "text-green-400" : "text-green-600"
-              }`}
-            >
-              ✓
-            </button>
-            <button
-              onClick={cancelEditingLabel}
-              className={`text-xs ${
-                darkMode ? "text-red-400" : "text-red-500"
-              }`}
-            >
-              ×
-            </button>
-          </div>
-        ) : (
-          <label
-            className={`w-full sm:w-32 text-sm font-medium ${
-              darkMode ? "text-white" : "text-gray-800"
-            } cursor-pointer`}
-            onClick={() => startEditingLabel("paymentTerms")}
+        <div className="flex-1 mt-10 lg:mt-0 lg:px-8">
+          <h2
+            className={`text-2xl font-semibold text-right pr-24 mb-2 ${
+              darkMode ? "text-white" : "text-gray-900"
+            }`}
           >
-            {labels.paymentTerms}
-          </label>
-        )}
-      </div>
+            INVOICE
+          </h2>
 
-      <input
-        placeholder="Payment Terms"
-        value={paymentTerms}
-        onChange={(e) => setPaymentTerms(e.target.value)}
-        className={`w-full sm:flex-1 border rounded px-3 py-2 transition-colors duration-300 
+          <div className="space-y-6">
+            {/* Invoice Number */}
+            <div className="flex flex-col sm:flex-row sm:items-center w-full sm:w-[80%] ml-auto gap-2 sm:gap-x-4">
+              <label
+                className={`w-full sm:w-32 text-sm font-medium ${
+                  darkMode ? "text-white" : "text-gray-800"
+                }`}
+              >
+                #
+              </label>
+
+              <input
+                placeholder="#"
+                value={invoiceNumber}
+                onChange={(e) => setInvoiceNumber(e.target.value)}
+                className={`w-full sm:flex-1 border rounded px-3 py-2 transition-colors duration-300 
           ${
             darkMode
               ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500"
               : "bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-blue-500"
           }`}
-      />
-    </div>
+              />
+            </div>
 
-{/* Due Date Field */}
-<div className="flex flex-col sm:flex-row sm:items-center w-full sm:w-[80%] ml-auto gap-2 sm:gap-x-4">
-  <div className="flex items-center">
-    {isEditingLabel === "dueDate" ? (
-      <div className="flex items-center w-full sm:w-32">
-        <input
-          type="text"
-          value={tempLabelValue}
-          onChange={(e) => setTempLabelValue(e.target.value)}
-          className={`border rounded px-2 py-1 w-full mr-2 ${
+            {/* Date Field */}
+            <div className="flex flex-col sm:flex-row sm:items-center w-full sm:w-[80%] ml-auto gap-2 sm:gap-x-4">
+              <div className="flex items-center">
+                {isEditingLabel === "date" ? (
+                  <div className="flex items-center w-full sm:w-32">
+                    <input
+                      type="text"
+                      value={tempLabelValue}
+                      onChange={(e) => setTempLabelValue(e.target.value)}
+                      className={`border rounded px-2 py-1 w-full mr-2 ${
+                        darkMode
+                          ? "bg-gray-700 border-gray-600 text-white"
+                          : "bg-white border-gray-300 text-gray-900"
+                      }`}
+                    />
+                    <button
+                      onClick={saveLabel}
+                      className={`text-xs mr-1 ${
+                        darkMode ? "text-green-400" : "text-green-600"
+                      }`}
+                    >
+                      ✓
+                    </button>
+                    <button
+                      onClick={cancelEditingLabel}
+                      className={`text-xs ${
+                        darkMode ? "text-red-400" : "text-red-500"
+                      }`}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ) : (
+                  <label
+                    className={`w-full sm:w-32 text-sm font-medium ${
+                      darkMode ? "text-white" : "text-gray-800"
+                    } cursor-pointer`}
+                    onClick={() => startEditingLabel("date")}
+                  >
+                    {labels.date}
+                  </label>
+                )}
+              </div>
+
+              {/* Date input with fixed width */}
+              <div className="w-full sm:flex-1">
+                <input
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  className={`w-full border rounded px-3 py-2 transition-colors duration-300 ${
+                    darkMode
+                      ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 dark-calendar-icon"
+                      : "bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-blue-500"
+                  }`}
+                />
+              </div>
+            </div>
+            {/* Payment Terms */}
+            <div className="flex flex-col sm:flex-row sm:items-center w-full sm:w-[80%] ml-auto gap-2 sm:gap-x-4">
+              <div className="flex items-center">
+                {isEditingLabel === "paymentTerms" ? (
+                  <div className="flex items-center w-full sm:w-32">
+                    <input
+                      type="text"
+                      value={tempLabelValue}
+                      onChange={(e) => setTempLabelValue(e.target.value)}
+                      className={`border rounded px-2 py-1 w-full mr-2 ${
+                        darkMode
+                          ? "bg-gray-700 border-gray-600 text-white"
+                          : "bg-white border-gray-300 text-gray-900"
+                      }`}
+                    />
+                    <button
+                      onClick={saveLabel}
+                      className={`text-xs mr-1 ${
+                        darkMode ? "text-green-400" : "text-green-600"
+                      }`}
+                    >
+                      ✓
+                    </button>
+                    <button
+                      onClick={cancelEditingLabel}
+                      className={`text-xs ${
+                        darkMode ? "text-red-400" : "text-red-500"
+                      }`}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ) : (
+                  <label
+                    className={`w-full sm:w-32 text-sm font-medium ${
+                      darkMode ? "text-white" : "text-gray-800"
+                    } cursor-pointer`}
+                    onClick={() => startEditingLabel("paymentTerms")}
+                  >
+                    {labels.paymentTerms}
+                  </label>
+                )}
+              </div>
+
+              <input
+                placeholder="Payment Terms"
+                value={paymentTerms}
+                onChange={(e) => setPaymentTerms(e.target.value)}
+                className={`w-full sm:flex-1 border rounded px-3 py-2 transition-colors duration-300 
+          ${
             darkMode
-              ? "bg-gray-700 border-gray-600 text-white"
-              : "bg-white border-gray-300 text-gray-900"
+              ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500"
+              : "bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-blue-500"
           }`}
-        />
-        <button
-          onClick={saveLabel}
-          className={`text-xs mr-1 ${
-            darkMode ? "text-green-400" : "text-green-600"
-          }`}
-        >
-          ✓
-        </button>
-        <button
-          onClick={cancelEditingLabel}
-          className={`text-xs ${
-            darkMode ? "text-red-400" : "text-red-500"
-          }`}
-        >
-          ×
-        </button>
-      </div>
-    ) : (
-      <label
-        className={`w-full sm:w-32 text-sm font-medium ${
-          darkMode ? "text-white" : "text-gray-800"
-        } cursor-pointer`}
-        onClick={() => startEditingLabel("dueDate")}
-      >
-        {labels.dueDate}
-      </label>
-    )}
-  </div>
+              />
+            </div>
 
-  {/* Due Date input with fixed width */}
-  <div className="w-full sm:flex-1">
-    <input
-      type="date"
-      value={dueDate}
-      onChange={(e) => setDueDate(e.target.value)}
-      className={`w-full border rounded px-3 py-2 transition-colors duration-300 ${
-        darkMode
-          ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 dark-calendar-icon"
-          : "bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-blue-500"
-      }`}
-    />
-  </div>
-</div>
+            {/* Due Date Field */}
+            <div className="flex flex-col sm:flex-row sm:items-center w-full sm:w-[80%] ml-auto gap-2 sm:gap-x-4">
+              <div className="flex items-center">
+                {isEditingLabel === "dueDate" ? (
+                  <div className="flex items-center w-full sm:w-32">
+                    <input
+                      type="text"
+                      value={tempLabelValue}
+                      onChange={(e) => setTempLabelValue(e.target.value)}
+                      className={`border rounded px-2 py-1 w-full mr-2 ${
+                        darkMode
+                          ? "bg-gray-700 border-gray-600 text-white"
+                          : "bg-white border-gray-300 text-gray-900"
+                      }`}
+                    />
+                    <button
+                      onClick={saveLabel}
+                      className={`text-xs mr-1 ${
+                        darkMode ? "text-green-400" : "text-green-600"
+                      }`}
+                    >
+                      ✓
+                    </button>
+                    <button
+                      onClick={cancelEditingLabel}
+                      className={`text-xs ${
+                        darkMode ? "text-red-400" : "text-red-500"
+                      }`}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ) : (
+                  <label
+                    className={`w-full sm:w-32 text-sm font-medium ${
+                      darkMode ? "text-white" : "text-gray-800"
+                    } cursor-pointer`}
+                    onClick={() => startEditingLabel("dueDate")}
+                  >
+                    {labels.dueDate}
+                  </label>
+                )}
+              </div>
 
-    {/* PO Number */}
-    <div className="flex flex-col sm:flex-row sm:items-center w-full sm:w-[80%] ml-auto gap-2 sm:gap-x-4">
-      <div className="flex items-center">
-        {isEditingLabel === "poNumber" ? (
-          <div className="flex items-center w-full sm:w-32">
-            <input
-              type="text"
-              value={tempLabelValue}
-              onChange={(e) => setTempLabelValue(e.target.value)}
-              className={`border rounded px-2 py-1 w-full mr-2 ${
-                darkMode
-                  ? "bg-gray-700 border-gray-600 text-white"
-                  : "bg-white border-gray-300 text-gray-900"
-              }`}
-            />
-            <button
-              onClick={saveLabel}
-              className={`text-xs mr-1 ${
-                darkMode ? "text-green-400" : "text-green-600"
-              }`}
-            >
-              ✓
-            </button>
-            <button
-              onClick={cancelEditingLabel}
-              className={`text-xs ${
-                darkMode ? "text-red-400" : "text-red-500"
-              }`}
-            >
-              ×
-            </button>
+              {/* Due Date input with fixed width */}
+              <div className="w-full sm:flex-1">
+                <input
+                  type="date"
+                  value={dueDate}
+                  onChange={(e) => setDueDate(e.target.value)}
+                  className={`w-full border rounded px-3 py-2 transition-colors duration-300 ${
+                    darkMode
+                      ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 dark-calendar-icon"
+                      : "bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-blue-500"
+                  }`}
+                />
+              </div>
+            </div>
+
+            {/* PO Number */}
+            <div className="flex flex-col sm:flex-row sm:items-center w-full sm:w-[80%] ml-auto gap-2 sm:gap-x-4">
+              <div className="flex items-center">
+                {isEditingLabel === "poNumber" ? (
+                  <div className="flex items-center w-full sm:w-32">
+                    <input
+                      type="text"
+                      value={tempLabelValue}
+                      onChange={(e) => setTempLabelValue(e.target.value)}
+                      className={`border rounded px-2 py-1 w-full mr-2 ${
+                        darkMode
+                          ? "bg-gray-700 border-gray-600 text-white"
+                          : "bg-white border-gray-300 text-gray-900"
+                      }`}
+                    />
+                    <button
+                      onClick={saveLabel}
+                      className={`text-xs mr-1 ${
+                        darkMode ? "text-green-400" : "text-green-600"
+                      }`}
+                    >
+                      ✓
+                    </button>
+                    <button
+                      onClick={cancelEditingLabel}
+                      className={`text-xs ${
+                        darkMode ? "text-red-400" : "text-red-500"
+                      }`}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ) : (
+                  <label
+                    className={`w-full sm:w-32 text-sm font-medium ${
+                      darkMode ? "text-white" : "text-gray-800"
+                    } cursor-pointer`}
+                    onClick={() => startEditingLabel("poNumber")}
+                  >
+                    {labels.poNumber}
+                  </label>
+                )}
+              </div>
+
+              <input
+                placeholder="PO Number"
+                value={poNumber}
+                onChange={(e) => setPoNumber(e.target.value)}
+                className={`w-full sm:flex-1 border rounded px-3 py-2 transition-colors duration-300 
+          ${
+            darkMode
+              ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500"
+              : "bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-blue-500"
+          }`}
+              />
+            </div>
           </div>
-        ) : (
-          <label
-            className={`w-full sm:w-32 text-sm font-medium ${
-              darkMode ? "text-white" : "text-gray-800"
-            } cursor-pointer`}
-            onClick={() => startEditingLabel("poNumber")}
-          >
-            {labels.poNumber}
-          </label>
-        )}
-      </div>
-
-      <input
-        placeholder="PO Number"
-        value={poNumber}
-        onChange={(e) => setPoNumber(e.target.value)}
-        className={`w-full sm:flex-1 border rounded px-3 py-2 transition-colors duration-300 
-          ${
-            darkMode
-              ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500"
-              : "bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-blue-500"
-          }`}
-      />
-    </div>
-  </div>
-</div>
-
+        </div>
 
         {/* Right section */}
         <div className="lg:w-48 mt-10 lg:mt-0 space-y-4 pt-20">
-          <button
-            onClick={handleDownloadClick} // Only call handleDownloadClick, it handles everything
-            className={`mt-6 w-full py-2 rounded transition-colors duration-300 ${
-              darkMode
-                ? "bg-emerald-700 hover:bg-emerald-600 text-white"
-                : "bg-emerald-600 hover:bg-emerald-700 text-white"
-            }`}
-          >
-            Download Invoice
-          </button>
+        <button
+  onClick={handleDownloadClick}
+  disabled={isDownloading}
+  className={`mt-6 w-full py-2 rounded flex justify-center items-center transition-colors duration-300 ${
+    darkMode
+      ? isDownloading
+        ? "bg-emerald-800 text-white cursor-not-allowed"
+        : "bg-emerald-700 hover:bg-emerald-600 text-white"
+      : isDownloading
+        ? "bg-emerald-500 text-white cursor-not-allowed"
+        : "bg-emerald-600 hover:bg-emerald-700 text-white"
+  }`}
+>
+  {isDownloading ? (
+    <>
+      <svg
+        className="animate-spin h-5 w-5 mr-2 text-white"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <circle
+          className="opacity-25"
+          cx="12"
+          cy="12"
+          r="10"
+          stroke="currentColor"
+          strokeWidth="4"
+        />
+        <path
+          className="opacity-75"
+          fill="currentColor"
+          d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"
+        />
+      </svg>
+      Preparing PDF...
+    </>
+  ) : (
+    "Download Invoice"
+  )}
+</button>
+
 
           <div>
             <label
@@ -1323,15 +1366,15 @@ const checkInvoiceExists = async (invoiceNumber) => {
             </select>
           </div>
 
-         <p
-  onClick={handleSaveDefault}
-  className={`text-sm cursor-pointer hover:underline ${
-    darkMode ? "text-green-400" : "text-green-600"
-  }`}
->
-  Save Default
-</p>
-        </div>  
+          <p
+            onClick={handleSaveDefault}
+            className={`text-sm cursor-pointer hover:underline ${
+              darkMode ? "text-green-400" : "text-green-600"
+            }`}
+          >
+            Save Default
+          </p>
+        </div>
       </div>
 
       {/* Item Table */}

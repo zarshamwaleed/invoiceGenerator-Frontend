@@ -8,6 +8,7 @@ import { usePDF } from "react-to-pdf";
 import { InvoiceContext } from "../context/InvoiceContext";
 import { useLocation } from 'react-router-dom';
 import { AuthContext } from "../context/AuthContext";
+import Cookies from 'js-cookie';
 
 export default function HomePage() {
   const { darkMode } = useContext(ThemeContext);
@@ -16,6 +17,7 @@ export default function HomePage() {
   const { invoiceData, setInvoiceData, hardReset } = useContext(InvoiceContext);
   const location = useLocation();
   const [formData, setFormData] = useState({});
+const [isCreating, setIsCreating] = useState(false);
 
   // Helper to map pathname to invoice type
   const getInvoiceType = (path) => {
@@ -264,10 +266,18 @@ if (invoice.lineItems && invoice.lineItems.length > 0) {
       isDiscountPercentage, discountPercentage, 
       discountFixed, shippingAmount, amountPaid]);
 
- 
-   const handleHide = () => {
-     setIsVisible(false);
-   };
+      useEffect(() => {
+  const dismissed = Cookies.get('welcomeDismissed');
+  if (dismissed === 'true') {
+    setIsVisible(false);
+  }
+}, []);
+
+ const handleHide = () => {
+  setIsVisible(false);
+  Cookies.set('welcomeDismissed', 'true', { expires: 7 }); // Expires in 30 days
+};
+
  
    const addItem = () => {
      const newId =
@@ -600,124 +610,117 @@ const getCurrencySymbol = () => currencySymbols[icurrency] || "$";
  
  };
  
- const handleCreateInvoice = async () => {
-   const validLineItems = items
-     .filter(item => item.description?.trim())
-     .map(item => ({
-       description: item.description.trim(),
-       quantity: Number(item.quantity) || 1,
-       rate: Number(item.price) || 0,
-       amount: Number((item.quantity * item.price).toFixed(2)) || 0
-     }));
- 
-   if (!from?.trim() || !billTo?.trim() || validLineItems.length === 0) {
-   Swal.fire({
-     title: '⚠️ Missing Required Information',
-     text: 'Please fill in all required fields and add at least one valid line item before continuing.',
-     icon: 'warning',
-     confirmButtonText: 'OK',
-     confirmButtonColor: '#f0ad4e'
-   });
-   return;
- }
- 
- 
-   const subtotal = validLineItems.reduce((sum, item) => sum + item.amount, 0);
-   const tax = isTaxPercentage ? (subtotal * taxRate) / 100 : taxAmount;
-   const discount = isDiscountPercentage
-     ? (subtotal * discountPercentage) / 100
-     : discountFixed;
-   const total = subtotal + tax - discount + Number(shippingAmount || 0);
-   const balanceDue = total - Number(amountPaid || 0);
- 
-   const dataToSend = {
-     type: invoiceType || "INVOICE",
-  userId: user?.id || user?.sub || user?.email || null,
+const handleCreateInvoice = async () => {
+  const validLineItems = items
+    .filter(item => item.description?.trim())
+    .map(item => ({
+      description: item.description.trim(),
+      quantity: Number(item.quantity) || 1,
+      rate: Number(item.price) || 0,
+      amount: Number((item.quantity * item.price).toFixed(2)) || 0,
+    }));
 
-     logo: ilogo || null,
-     from: from.trim(),
-     billTo: billTo.trim(),
-     shipTo: shipTo?.trim() || null,
-     date: date || new Date().toISOString().split("T")[0],
-     paymentTerms: paymentTerms?.trim() || null,
-     dueDate: dueDate || null,
-     poNumber: poNumber?.trim() || null,
-     currency: icurrency || "USD",
-     subtotal: parseFloat(subtotal.toFixed(2)),
-     tax: parseFloat(tax.toFixed(2)),
-     discount: parseFloat(discount.toFixed(2)),
-     shipping: parseFloat((shippingAmount || 0).toFixed(2)),
-     total: parseFloat(total.toFixed(2)),
-     amountPaid: parseFloat((amountPaid || 0).toFixed(2)),
-     balanceDue: parseFloat(balanceDue.toFixed(2)),
-     notes: notes?.trim() || null,
-     terms: terms?.trim() || null,
-     invoiceNumber: invoiceNumber || `INV-${Date.now()}`,
-     lineItems: validLineItems,
-     labels: {
-       ...labels,
-       from: labels.from || "From",
-       billTo: labels.billTo || "Bill To",
-       shipTo: labels.shipTo || "Ship To",
-       paymentTerms: labels.paymentTerms || "Payment Terms",
-       dueDate: labels.dueDate || "Due Date",
-       poNumber: labels.poNumber || "PO Number",
-       currency: labels.currency || "Currency"
-     }
-   };
- 
- 
- 
- try {
-  const response = await fetch(
-  "https://invoice-generator-backend-liard.vercel.app/invoice",
-  {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(dataToSend),
+  if (!from?.trim() || !billTo?.trim() || validLineItems.length === 0) {
+    Swal.fire({
+      title: '⚠️ Missing Required Information',
+      text: 'Please fill in all required fields and add at least one valid line item before continuing.',
+      icon: 'warning',
+      confirmButtonText: 'OK',
+      confirmButtonColor: '#f0ad4e',
+    });
+    return;
   }
-);
 
- 
-   const result = await response.json();
- 
-   if (response.ok) {
-     // ✅ Success Alert
-     Swal.fire({
-       title: '✅ Invoice Created!',
-       text: 'Your invoice has been generated successfully.',
-       icon: 'success',
-       confirmButtonText: 'Great!',
-       confirmButtonColor: '#28a745'
-     }).then(() => {
-       navigate("/my-invoices"); // Navigate only after user clicks "Great!"
-     });
- 
-   } else {
-     // ❌ Server returned an error
-     Swal.fire({
-       title: '❌ Failed to Create Invoice',
-       text: result.message || 'Something went wrong. Please try again.',
-       icon: 'error',
-       confirmButtonText: 'OK',
-       confirmButtonColor: '#d33'
-     });
-   }
- 
- } catch (error) {
-   console.error("❌ Error creating invoice:", error);
- 
-   // ⚠️ Network or unexpected error
-   Swal.fire({
-     title: '⚠️ Network Error',
-     text: 'Failed to create invoice. Please check your connection and try again.',
-     icon: 'warning',
-     confirmButtonText: 'Retry',
-     confirmButtonColor: '#f0ad4e'
-   });
- }
- 
- };
+  setIsCreating(true); // 🔹 Start spinner
+
+  const subtotal = validLineItems.reduce((sum, item) => sum + item.amount, 0);
+  const tax = isTaxPercentage ? (subtotal * taxRate) / 100 : taxAmount;
+  const discount = isDiscountPercentage
+    ? (subtotal * discountPercentage) / 100
+    : discountFixed;
+  const total = subtotal + tax - discount + Number(shippingAmount || 0);
+  const balanceDue = total - Number(amountPaid || 0);
+
+  const dataToSend = {
+    type: invoiceType || "INVOICE",
+    userId: user?.id || user?.sub || user?.email || null,
+    logo: ilogo || null,
+    from: from.trim(),
+    billTo: billTo.trim(),
+    shipTo: shipTo?.trim() || null,
+    date: date || new Date().toISOString().split("T")[0],
+    paymentTerms: paymentTerms?.trim() || null,
+    dueDate: dueDate || null,
+    poNumber: poNumber?.trim() || null,
+    currency: icurrency || "USD",
+    subtotal: parseFloat(subtotal.toFixed(2)),
+    tax: parseFloat(tax.toFixed(2)),
+    discount: parseFloat(discount.toFixed(2)),
+    shipping: parseFloat((shippingAmount || 0).toFixed(2)),
+    total: parseFloat(total.toFixed(2)),
+    amountPaid: parseFloat((amountPaid || 0).toFixed(2)),
+    balanceDue: parseFloat(balanceDue.toFixed(2)),
+    notes: notes?.trim() || null,
+    terms: terms?.trim() || null,
+    invoiceNumber: invoiceNumber || `INV-${Date.now()}`,
+    lineItems: validLineItems,
+    labels: {
+      ...labels,
+      from: labels.from || "From",
+      billTo: labels.billTo || "Bill To",
+      shipTo: labels.shipTo || "Ship To",
+      paymentTerms: labels.paymentTerms || "Payment Terms",
+      dueDate: labels.dueDate || "Due Date",
+      poNumber: labels.poNumber || "PO Number",
+      currency: labels.currency || "Currency",
+    },
+  };
+
+  try {
+    const response = await fetch(
+      "https://invoice-generator-backend-liard.vercel.app/invoice",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(dataToSend),
+      }
+    );
+
+    const result = await response.json();
+
+    if (response.ok) {
+      Swal.fire({
+        title: '✅ Invoice Created!',
+        text: 'Your invoice has been generated successfully.',
+        icon: 'success',
+        confirmButtonText: 'Great!',
+        confirmButtonColor: '#28a745',
+      }).then(() => {
+        navigate("/my-invoices");
+      });
+    } else {
+      Swal.fire({
+        title: '❌ Failed to Create Invoice',
+        text: result.message || 'Something went wrong. Please try again.',
+        icon: 'error',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#d33',
+      });
+    }
+  } catch (error) {
+    console.error("❌ Error creating invoice:", error);
+    Swal.fire({
+      title: '⚠️ Network Error',
+      text: 'Failed to create invoice. Please check your connection and try again.',
+      icon: 'warning',
+      confirmButtonText: 'Retry',
+      confirmButtonColor: '#f0ad4e',
+    });
+  } finally {
+    setIsCreating(false); // 🔹 Stop spinner no matter what
+  }
+};
+
  
  
  
@@ -1077,12 +1080,13 @@ return (
 
       {/* Invoice Section */}
       <div
-        className={`max-w-7xl mx-auto mt-10 border rounded-lg p-6 flex flex-col lg:flex-row transition-colors duration-300 ${
-          darkMode
-            ? "bg-gray-800 border-gray-700"
-            : "bg-gray-50 border-gray-200"
-        }`}
-      >
+  className={`max-w-7xl mx-auto ${
+    isVisible ? "mt-10" : "mt-0"
+  } border rounded-lg p-6 flex flex-col lg:flex-row transition-all duration-300 ${
+    darkMode ? "bg-gray-800 border-gray-700" : "bg-gray-50 border-gray-200"
+  }`}
+>
+
         {/* Left section */}
         <div className="flex-1 space-y-4">
           <div
@@ -1518,16 +1522,48 @@ return (
 </div>
         {/* Right section */}
         <div className="lg:w-48 mt-10 lg:mt-0 space-y-4 pt-20">
-          <button
-            onClick={handleCreateInvoice} // Only call handleDownloadClick, it handles everything
-            className={`mt-6 w-full py-2 rounded transition-colors duration-300 ${
-              darkMode
-                ? "bg-emerald-700 hover:bg-emerald-600 text-white"
-                : "bg-emerald-600 hover:bg-emerald-700 text-white"
-            }`}
-          >
-            Create Invoice
-          </button>
+         <button
+  onClick={handleCreateInvoice}
+  disabled={isCreating}
+  className={`mt-6 w-full py-2 rounded flex justify-center items-center transition-colors duration-300 ${
+    darkMode
+      ? isCreating
+        ? "bg-emerald-800 text-white cursor-not-allowed"
+        : "bg-emerald-700 hover:bg-emerald-600 text-white"
+      : isCreating
+        ? "bg-emerald-500 text-white cursor-not-allowed"
+        : "bg-emerald-600 hover:bg-emerald-700 text-white"
+  }`}
+>
+  {isCreating ? (
+    <>
+      <svg
+        className="animate-spin h-5 w-5 mr-2 text-white"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <circle
+          className="opacity-25"
+          cx="12"
+          cy="12"
+          r="10"
+          stroke="currentColor"
+          strokeWidth="4"
+        />
+        <path
+          className="opacity-75"
+          fill="currentColor"
+          d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"
+        />
+      </svg>
+      Creating...
+    </>
+  ) : (
+    "Create Invoice"
+  )}
+</button>
+
 
           <div>
             <label
