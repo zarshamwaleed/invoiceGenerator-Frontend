@@ -419,33 +419,24 @@ const [isDownloading, setIsDownloading] = useState(false);
   };
 
   // Update the download handler
- const handleDownloadClick = async (e) => {
+  const handleDownloadClick = async (e) => {
   e.preventDefault();
-
-  if (isDownloading) return; // Prevent multiple clicks
-
-  setIsDownloading(true);
+  setIsDownloading(true); // Start loading
 
   try {
-    // ✅ Save invoice first
-    const savedInvoice = await handleSubmit();
+    const savedInvoice = await handleSubmit(e);
 
-    // ✅ Update invoice number if backend returned it
     if (savedInvoice.invoice?.invoiceNumber) {
       setInvoiceNumber(savedInvoice.invoice.invoiceNumber);
     }
 
-    // ✅ Generate PDF & navigate
+    // Wait for PDF generation before navigating
     requestAnimationFrame(() => {
       toPDF();
-      setTimeout(() => {
-        setIsDownloading(false); // ✅ Reset after short delay
-        navigate("/thankyou");
-      }, 1000); // adjust timing if necessary
+      navigate("/thankyou");
     });
   } catch (error) {
     console.error("Error in download process:", error);
-
     Swal.fire({
       title: "❌ Failed to Generate Invoice",
       text: "Something went wrong during the download process. Please try again.",
@@ -453,8 +444,9 @@ const [isDownloading, setIsDownloading] = useState(false);
       confirmButtonText: "OK",
       confirmButtonColor: "#d33",
     });
-
-    setIsDownloading(false); // Ensure we re-enable the button
+  } finally {
+    // Prevents early reset, in case navigate() reloads anyway
+    setTimeout(() => setIsDownloading(false), 3000);
   }
 };
 
@@ -1254,7 +1246,7 @@ const [isDownloading, setIsDownloading] = useState(false);
 
         {/* Right section */}
         <div className="lg:w-48 mt-10 lg:mt-0 space-y-4 pt-20">
-         <button
+       <button
   onClick={handleDownloadClick}
   disabled={isDownloading}
   className={`mt-6 w-full py-2 rounded flex justify-center items-center transition-colors duration-300 ${
@@ -1289,7 +1281,7 @@ const [isDownloading, setIsDownloading] = useState(false);
           d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"
         />
       </svg>
-      Preparing PDF...
+      Downloading...
     </>
   ) : (
     "Download Invoice"
