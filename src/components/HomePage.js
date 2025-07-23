@@ -321,18 +321,30 @@ useEffect(() => {
     fileInputRef.current.click();
   };
 
-  const handleLogoUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64 = reader.result;
-        setLogo(base64); // Preview in UI
-        setiLogo(base64); // Send to backend
-      };
-      reader.readAsDataURL(file);
+ const handleLogoUpload = (e) => {
+  const file = e.target.files[0];
+
+  if (file) {
+    // Check if file size is more than 2MB
+    if (file.size > 2 * 1024 * 1024) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Image Too Large',
+        text: 'Image size must be 2MB or less!',
+        confirmButtonColor: '#10B981', // Optional: matches Tailwind emerald
+      });
+      return;
     }
-  };
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64 = reader.result;
+      setLogo(base64);   // For preview
+      setiLogo(base64);  // For backend
+    };
+    reader.readAsDataURL(file);
+  }
+};
 
   // Store currency code → symbol mapping
   const currencySymbols = {
@@ -421,6 +433,8 @@ useEffect(() => {
       orientation: "portrait",
     },
   });
+
+  
 
   // Update the handleSubmit function to update context and save to backend
   const handleSubmit = async () => {
@@ -859,6 +873,7 @@ useEffect(() => {
     // No need to manually set invoiceData here since it's already in context
     navigate("/");
   };
+  
 
   return (
  <div
@@ -910,47 +925,50 @@ useEffect(() => {
     darkMode ? "bg-gray-800 border-gray-700" : "bg-gray-50 border-gray-200"
   }`}
 >
+  
 
 
     {/* Left section… */}
 
         <div className="flex-1 space-y-4">
-          <div
-            className={`border w-40 h-24 flex items-center justify-center cursor-pointer transition-colors duration-300 relative group ${
-              darkMode
-                ? "border-gray-600 text-gray-400 hover:border-gray-500"
-                : "border-gray-300 text-gray-400 hover:border-gray-400"
-            }`}
-            onClick={() => !logo && handleLogoClick()}
-          >
-            {logo ? (
-              <div className="w-full h-full relative">
-                <img
-                  src={logo}
-                  alt="Logo"
-                  className="w-full h-full object-contain"
-                />
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setLogo(null);
-                  }}
-                  className="absolute top-1 left-1 bg-black text-white rounded-full w-5 h-5 text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                  title="Remove Logo"
-                >
-                  ×
-                </button>
-              </div>
-            ) :t("+ Add Your Logo")
-}
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleLogoUpload}
-              accept="image/*"
-              className="hidden"
-            />
-          </div>
+         <div
+  className={`border w-40 h-24 flex items-center justify-center cursor-pointer transition-colors duration-300 relative group ${
+    darkMode
+      ? "border-gray-600 text-gray-400 hover:border-gray-500"
+      : "border-gray-300 text-gray-400 hover:border-gray-400"
+  }`}
+  onClick={() => !logo && handleLogoClick()}
+>
+  {logo ? (
+    <div className="w-full h-full relative">
+      <img
+        src={logo}
+        alt="Logo"
+        className="w-full h-full object-contain"
+      />
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          setLogo(null);
+        }}
+        className="absolute top-1 left-1 bg-black text-white rounded-full w-5 h-5 text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+        title="Remove Logo"
+      >
+        ×
+      </button>
+    </div>
+  ) : (
+    t("+ Add Your Logo")
+  )}
+  <input
+    type="file"
+    ref={fileInputRef}
+    onChange={handleLogoUpload}
+    accept="image/*"
+    className="hidden"
+  />
+</div>
+
 
           <input
             placeholder={t("Who is this from?")}
