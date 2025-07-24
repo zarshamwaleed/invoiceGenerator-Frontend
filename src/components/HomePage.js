@@ -971,7 +971,7 @@ useEffect(() => {
 
 
           <input
-            placeholder={t("Who is this from?")}
+            placeholder={t("Company Name")}
 
             value={from}
             onChange={(e) => setFrom(e.target.value)}
@@ -1027,7 +1027,7 @@ useEffect(() => {
     )}
   </div>
   <input
-    placeholder={t("Who is this to?")}
+    placeholder={t("Customer Name")}
     value={billTo}
     onChange={(e) => setBillTo(e.target.value)}
     className={`w-full border rounded px-3 py-2 transition-colors duration-300 
@@ -1084,7 +1084,7 @@ useEffect(() => {
   </div>
 
   <input
-    placeholder={t("(optional)")}
+    placeholder={t("Customer Address")}
     value={shipTo}
     onChange={(e) => setShipTo(e.target.value)}
     className={`w-full border rounded px-3 py-2 transition-colors duration-300 
@@ -1677,12 +1677,13 @@ useEffect(() => {
               darkMode ? "bg-gray-800 text-white" : "bg-white text-gray-900"
             }`}
             type="number"
-            value={item.price}
+          value={item.price || ""}
             onChange={(e) =>
               handlePriceChange(item.id, e.target.value)
             }
+              placeholder="0"
             min="0"
-            step="0.01"
+            step="10"
           />
         </div>
         <div
@@ -1954,13 +1955,14 @@ useEffect(() => {
         <>
           <input
             type="number"
-            value={taxRate}
+            value={taxRate || ""}
             onChange={(e) => setTaxRate(parseFloat(e.target.value) || 0)}
             className={`border rounded px-2 py-1 w-20 mr-2 text-right transition-colors duration-300 ${
               darkMode
                 ? "bg-gray-700 border-gray-600 text-white"
                 : "bg-white border-gray-300 text-gray-900"
             }`}
+            placeholder= "0"
             min="0"
             max="100"
             step="0.1"
@@ -1980,15 +1982,16 @@ useEffect(() => {
           </span>
           <input
             type="number"
-            value={taxAmount}
+            value={taxAmount || ""}
             onChange={(e) => setTaxAmount(parseFloat(e.target.value) || 0)}
             className={`border rounded px-2 py-1 w-20 text-right transition-colors duration-300 ${
               darkMode
                 ? "bg-gray-700 border-gray-600 text-white"
                 : "bg-white border-gray-300 text-gray-900"
             }`}
+             placeholder= "0"
             min="0"
-            step="0.01"
+            step="0.1"
           />
         </>
       )}
@@ -2087,7 +2090,7 @@ useEffect(() => {
         <>
           <input
             type="number"
-            value={discountPercentage}
+            value={discountPercentage || ""}
             onChange={(e) =>
               setDiscountPercentage(parseFloat(e.target.value) || 0)
             }
@@ -2096,6 +2099,7 @@ useEffect(() => {
                 ? "bg-gray-700 border-gray-600 text-white"
                 : "bg-white border-gray-300 text-gray-900"
             }`}
+             placeholder= "0"
             min="0"
             max="100"
             step="0.1"
@@ -2117,7 +2121,7 @@ useEffect(() => {
           </span>
           <input
             type="number"
-            value={discountFixed}
+            value={discountFixed || ""}
             onChange={(e) =>
               setDiscountFixed(parseFloat(e.target.value) || 0)
             }
@@ -2126,8 +2130,9 @@ useEffect(() => {
                 ? "bg-gray-700 border-gray-600 text-white"
                 : "bg-white border-gray-300 text-gray-900"
             }`}
+             placeholder= "0"
             min="0"
-            step="0.01"
+            step="1"
           />
         </>
       )}
@@ -2233,7 +2238,7 @@ useEffect(() => {
                   </span>
                   <input
                     type="number"
-                    value={shippingAmount}
+                    value={shippingAmount || ""}
                     onChange={(e) =>
                       setShippingAmount(parseFloat(e.target.value) || 0)
                     }
@@ -2242,8 +2247,9 @@ useEffect(() => {
                         ? "bg-gray-700 border-gray-600 text-white"
                         : "bg-white border-gray-300 text-gray-900"
                     }`}
+                     placeholder= "0"
                     min="0"
-                    step="0.01"
+                    step="1"
                   />
                   <button
                     onClick={() => {
@@ -2371,7 +2377,7 @@ useEffect(() => {
                 </span>
                 <input
                   type="number"
-                  value={amountPaid}
+                  value={amountPaid || ""}
                   onChange={(e) =>
                     setAmountPaid(parseFloat(e.target.value) || 0)
                   }
@@ -2380,8 +2386,9 @@ useEffect(() => {
                       ? "bg-gray-700 border-gray-600 text-white"
                       : "bg-white border-gray-300 text-gray-900"
                   }`}
+                   placeholder= "0"
                   min="0"
-                  step="0.01"
+                  step="0.1"
                 />
               </div>
             </div>

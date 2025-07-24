@@ -1860,8 +1860,9 @@ return (
                     ? "bg-gray-800 border-gray-700 text-white"
                     : "bg-white border-gray-200 text-gray-900"
                 }`}
-                value={item.quantity}
+                value={item.quantity || ""}
                 onChange={(e) => handleQuantityChange(item.id, e.target.value)}
+                 placeholder= "0"
                 min="0"
                 step="1"
               />
@@ -1880,8 +1881,9 @@ return (
                       : "bg-white text-gray-900"
                   }`}
                   type="number"
-                  value={item.price}
+                  value={item.price || ""}
                   onChange={(e) => handlePriceChange(item.id, e.target.value)}
+                   placeholder= "0"
                   min="0"
                   step="0.01"
                 />
@@ -2152,7 +2154,7 @@ return (
                     <>
                       <input
                         type="number"
-                        value={taxRate}
+                        value={taxRate || ""}
                         onChange={(e) =>
                           setTaxRate(parseFloat(e.target.value) || 0)
                         }
@@ -2161,6 +2163,7 @@ return (
                             ? "bg-gray-700 border-gray-600 text-white"
                             : "bg-white border-gray-300 text-gray-900"
                         }`}
+                         placeholder= "0"
                         min="0"
                         max="100"
                         step="0.1"
@@ -2182,7 +2185,7 @@ return (
                       </span>
                       <input
                         type="number"
-                        value={taxAmount}
+                        value={taxAmount || ""}
                         onChange={(e) =>
                           setTaxAmount(parseFloat(e.target.value) || 0)
                         }
@@ -2191,6 +2194,7 @@ return (
                             ? "bg-gray-700 border-gray-600 text-white"
                             : "bg-white border-gray-300 text-gray-900"
                         }`}
+                         placeholder= "0"
                         min="0"
                         step="0.01"
                       />
@@ -2293,7 +2297,7 @@ return (
                     <>
                       <input
                         type="number"
-                        value={discountPercentage}
+                        value={discountPercentage || ""}
                         onChange={(e) =>
                           setDiscountPercentage(parseFloat(e.target.value) || 0)
                         }
@@ -2302,6 +2306,7 @@ return (
                             ? "bg-gray-700 border-gray-600 text-white"
                             : "bg-white border-gray-300 text-gray-900"
                         }`}
+                         placeholder= "0"
                         min="0"
                         max="100"
                         step="0.1"
@@ -2323,7 +2328,7 @@ return (
                       </span>
                       <input
                         type="number"
-                        value={discountFixed}
+                        value={discountFixed || ""}
                         onChange={(e) =>
                           setDiscountFixed(parseFloat(e.target.value) || 0)
                         }
@@ -2332,6 +2337,7 @@ return (
                             ? "bg-gray-700 border-gray-600 text-white"
                             : "bg-white border-gray-300 text-gray-900"
                         }`}
+                         placeholder= "0"
                         min="0"
                         step="0.01"
                       />
@@ -2441,7 +2447,7 @@ return (
                   </span>
                   <input
                     type="number"
-                    value={shippingAmount}
+                    value={shippingAmount || ""}
                     onChange={(e) =>
                       setShippingAmount(parseFloat(e.target.value) || 0)
                     }
@@ -2449,7 +2455,9 @@ return (
                       darkMode
                         ? "bg-gray-700 border-gray-600 text-white"
                         : "bg-white border-gray-300 text-gray-900"
+                        
                     }`}
+                     placeholder= "0"
                     min="0"
                     step="0.01"
                   />
@@ -2579,7 +2587,7 @@ return (
                 </span>
                 <input
                   type="number"
-                  value={amountPaid}
+                  value={amountPaid || ""}
                   onChange={(e) =>
                     setAmountPaid(parseFloat(e.target.value) || 0)
                   }
@@ -2588,8 +2596,9 @@ return (
                       ? "bg-gray-700 border-gray-600 text-white"
                       : "bg-white border-gray-300 text-gray-900"
                   }`}
+                   placeholder= "0"
                   min="0"
-                  step="0.01"
+                  step="0.1"
                 />
               </div>
             </div>
