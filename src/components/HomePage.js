@@ -12,6 +12,10 @@ import { useTranslation } from "react-i18next"; // <-- Added
 import i18n from "../i18n"; // adjust the path if needed
 
 export default function HomePage() {
+
+
+
+  
   const { darkMode } = useContext(ThemeContext);
 
   const navigate = useNavigate();
@@ -267,14 +271,18 @@ useEffect(() => {
 };
 
 
-  const addItem = () => {
-    const newId =
-      items.length > 0 ? Math.max(...items.map((i) => i.id)) + 1 : 1;
-    setItems([
-      ...items,
-      { id: newId, description: "", quantity: 1, price: 0, amount: 0 },
-    ]);
-  };
+const addMultipleItems = (count) => {
+  const lastId = items.length > 0 ? Math.max(...items.map((i) => i.id)) : 0;
+  const newItems = Array.from({ length: count }, (_, i) => ({
+    id: lastId + i + 1,
+    description: "",
+    quantity: 0,
+    price: 0,
+    amount: 0,
+  }));
+  setItems([...items, ...newItems]);
+};
+
 
   const removeItem = (id) => {
     setItems(items.filter((item) => item.id !== id));
@@ -282,7 +290,7 @@ useEffect(() => {
 
   // Update item quantity and recalculate amount
   const handleQuantityChange = (id, value) => {
-    const quantity = parseFloat(value) || 0;
+    const quantity = parseFloat(value) || "";
     setItems(
       items.map((item) =>
         item.id === id
@@ -294,7 +302,7 @@ useEffect(() => {
 
   // Update item price and recalculate amount
   const handlePriceChange = (id, value) => {
-    const price = parseFloat(value) || 0;
+    const price = parseFloat(value) || "";
     setItems(
       items.map((item) =>
         item.id === id
@@ -1509,16 +1517,19 @@ useEffect(() => {
     <div className="px-3 py-2 text-center">
       {isEditingLabel === "quantity" ? (
         <div className="flex items-center justify-center">
-          <input
-            type="text"
-            value={tempLabelValue}
-            onChange={(e) => setTempLabelValue(e.target.value)}
-            className={`border rounded px-2 py-1 w-full mr-2 ${
-              darkMode
-                ? "bg-gray-700 border-gray-600 text-white"
-                : "bg-white border-gray-300 text-gray-900"
-            }`}
-          />
+<input
+  type="text"
+  value={tempLabelValue === "" ? "" : tempLabelValue}
+  onChange={(e) => setTempLabelValue(e.target.value)}
+  placeholder="1" // for quantity input
+  className={`border rounded px-2 py-1 w-full mr-2 ${
+    darkMode
+      ? "bg-gray-700 border-gray-600 text-white"
+      : "bg-white border-gray-300 text-gray-900"
+  }`}
+/>
+
+
           <button
             onClick={saveLabel}
             className={`text-xs mr-1 ${
@@ -1550,16 +1561,18 @@ useEffect(() => {
     <div className="px-3 py-2 text-center">
       {isEditingLabel === "rate" ? (
         <div className="flex items-center justify-center">
-          <input
-            type="text"
-            value={tempLabelValue}
-            onChange={(e) => setTempLabelValue(e.target.value)}
-            className={`border rounded px-2 py-1 w-full mr-2 ${
-              darkMode
-                ? "bg-gray-700 border-gray-600 text-white"
-                : "bg-white border-gray-300 text-gray-900"
-            }`}
-          />
+<input
+  type="text"
+  value={tempLabelValue === "" ? "" : tempLabelValue}
+  onChange={(e) => setTempLabelValue(e.target.value)}
+  placeholder="0" // for rate input
+  className={`border rounded px-2 py-1 w-full mr-2 ${
+    darkMode
+      ? "bg-gray-700 border-gray-600 text-white"
+      : "bg-white border-gray-300 text-gray-900"
+  }`}
+/>
+
           <button
             onClick={saveLabel}
             className={`text-xs mr-1 ${
@@ -1650,20 +1663,19 @@ useEffect(() => {
             handleDescriptionChange(item.id, e.target.value)
           }
         />
-        <input
-          type="number"
-          className={`px-3 py-2 text-center border-r ${
-            darkMode
-              ? "bg-gray-800 border-gray-700 text-white"
-              : "bg-white border-gray-200 text-gray-900"
-          }`}
-          value={item.quantity}
-          onChange={(e) =>
-            handleQuantityChange(item.id, e.target.value)
-          }
-          min="0"
-          step="1"
-        />
+  <input
+  type="number"
+  className={`px-3 py-2 text-center border-r ${
+    darkMode
+      ? "bg-gray-800 border-gray-700 text-white placeholder-gray-400"
+      : "bg-white border-gray-200 text-gray-900 placeholder-gray-500"
+  }`}
+  value={item.quantity === 0 ? "" : item.quantity}   // ✅ empty instead of 0
+  placeholder="0"                                   // ✅ shows as placeholder
+  onChange={(e) => handleQuantityChange(item.id, e.target.value)}
+  min=""
+  step="1"
+/>
         <div
           className={`flex items-center px-2 py-2 border-r ${
             darkMode
@@ -1677,12 +1689,13 @@ useEffect(() => {
               darkMode ? "bg-gray-800 text-white" : "bg-white text-gray-900"
             }`}
             type="number"
-            value={item.price}
+            value={item.price || ""}
             onChange={(e) =>
               handlePriceChange(item.id, e.target.value)
             }
-            min="0"
-            step="0.01"
+            placeholder="0"
+            min=""
+            step="10"
           />
         </div>
         <div
@@ -1707,16 +1720,52 @@ useEffect(() => {
     ))}
 
     {/* Add Line Item Button */}
-    <button
-      onClick={addItem}
-      className={`mt-2 px-4 py-1 border rounded hover:bg-green-50 transition-colors duration-300 ${
-        darkMode
-          ? "border-green-500 text-green-400 hover:bg-gray-800"
-          : "border-green-600 text-green-600 hover:bg-green-50"
-      }`}
-    >
-      + {t("Line Item")}
-    </button>
+ <div className="flex gap-2 flex-wrap mt-4">
+  <button
+    onClick={() => addMultipleItems(1)}
+    className={`px-4 py-1 border rounded hover:bg-green-50 transition-colors duration-300 ${
+      darkMode
+        ? "border-green-500 text-green-400 hover:bg-gray-800"
+        : "border-green-600 text-green-600 hover:bg-green-50"
+    }`}
+  >
+    + {t("Line Item")}
+  </button>
+
+  <button
+    onClick={() => addMultipleItems(10)}
+    className={`px-4 py-1 border rounded hover:bg-green-50 transition-colors duration-300 ${
+      darkMode
+        ? "border-green-500 text-green-400 hover:bg-gray-800"
+        : "border-green-600 text-green-600 hover:bg-green-50"
+    }`}
+  >
+    + {t("Line 10 Items")}
+  </button>
+
+  <button
+    onClick={() => addMultipleItems(20)}
+    className={`px-4 py-1 border rounded hover:bg-green-50 transition-colors duration-300 ${
+      darkMode
+        ? "border-green-500 text-green-400 hover:bg-gray-800"
+        : "border-green-600 text-green-600 hover:bg-green-50"
+    }`}
+  >
+    + {t("Line 20 Items")}
+  </button>
+
+  <button
+    onClick={() => addMultipleItems(30)}
+    className={`px-4 py-1 border rounded hover:bg-green-50 transition-colors duration-300 ${
+      darkMode
+        ? "border-green-500 text-green-400 hover:bg-gray-800"
+        : "border-green-600 text-green-600 hover:bg-green-50"
+    }`}
+  >
+    + {t("Line 30 Items")}
+  </button>
+</div>
+
   </div>
 
         {/* Remaining Section After Line Item */}
