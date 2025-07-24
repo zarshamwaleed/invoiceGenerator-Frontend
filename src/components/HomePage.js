@@ -971,7 +971,7 @@ useEffect(() => {
 
 
           <input
-            placeholder={t("Who is this from?")}
+            placeholder={t("Company Name")}
 
             value={from}
             onChange={(e) => setFrom(e.target.value)}
@@ -1027,7 +1027,7 @@ useEffect(() => {
     )}
   </div>
   <input
-    placeholder={t("Who is this to?")}
+    placeholder={t("Customer Name")}
     value={billTo}
     onChange={(e) => setBillTo(e.target.value)}
     className={`w-full border rounded px-3 py-2 transition-colors duration-300 
@@ -1084,7 +1084,7 @@ useEffect(() => {
   </div>
 
   <input
-    placeholder={t("(optional)")}
+    placeholder={t("Customer address")}
     value={shipTo}
     onChange={(e) => setShipTo(e.target.value)}
     className={`w-full border rounded px-3 py-2 transition-colors duration-300 
